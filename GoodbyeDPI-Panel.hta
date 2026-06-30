@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta charset="utf-8">
+<title>GoodbyeDPI Panel</title>
+<hta:application
+  id="app"
+  applicationname="GoodbyeDPIPanel"
+  border="thin"
+  caption="yes"
+  maximizebutton="no"
+  minimizebutton="yes"
+  scroll="yes"
+  singleinstance="yes"
+  windowstate="normal"
+  icon="" />
+<style>
+/* ===== shadcn-inspired dark theme (zinc) — IE/HTA uyumlu, var()/grid/flex-gap YOK ===== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: "Segoe UI", system-ui, -apple-system, Tahoma, sans-serif;
+  background: #09090b;
+  color: #fafafa;
+  margin: 0; padding: 0;
+  font-size: 14px; line-height: 1.5;
+}
+.wrap { max-width: 860px; margin: 0 auto; padding: 20px 24px 72px; }
+
+/* Header */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0 22px; margin-bottom: 22px; border-bottom: 1px solid #1c1c1f;
+}
+h1 { font-size: 21px; line-height: 1.25; margin: 0; color: #fafafa; font-weight: 600; letter-spacing: -0.01em; }
+h1 small { display:block; color: #a1a1aa; font-size: 12.5px; font-weight: 400; margin-top: 4px; letter-spacing: 0; }
+
+/* Card */
+.card {
+  background: #0c0c0e; border: 1px solid #1f1f23; border-radius: 14px;
+  padding: 20px 22px; margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+.card h2 { font-size: 15px; margin: 0 0 6px; color: #fafafa; font-weight: 600; letter-spacing: -0.01em; }
+.card p.desc { color: #a1a1aa; font-size: 13px; margin: 0 0 14px; line-height: 1.55; }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 3px 9px; border-radius: 7px;
+  font-size: 12px; font-weight: 500; border: 1px solid transparent; vertical-align: middle;
+}
+.badge.ok   { background: rgba(34,197,94,.12);  color: #4ade80; border-color: rgba(34,197,94,.28); }
+.badge.stop { background: rgba(248,113,113,.10); color: #f87171; border-color: rgba(248,113,113,.26); }
+.badge.warn { background: rgba(251,191,36,.10);  color: #fbbf24; border-color: rgba(251,191,36,.26); }
+
+/* Rows / spacing (IE11'de flex gap yok -> margin) */
+.row { display: flex; flex-wrap: wrap; align-items: center; margin: -4px; }
+.row > button, .row > input { margin: 4px; }
+.statusline { display:flex; flex-wrap:wrap; align-items:center; margin: 0 0 16px; }
+.statusline > span { margin-right: 22px; margin-bottom: 6px; }
+.statusline .k { color:#a1a1aa; font-size:12.5px; margin-right: 6px; }
+.mode-now {
+  font-family: Consolas, "Cascadia Mono", monospace; color:#e4e4e7;
+  background:#18181b; padding:3px 9px; border-radius:6px; border:1px solid #27272a; font-size: 12.5px;
+}
+
+/* Buttons */
+button {
+  background: #18181b; color: #fafafa; border: 1px solid #27272a;
+  border-radius: 8px; padding: 8px 15px; font-size: 13px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+button:hover { background: #232327; border-color: #3f3f46; }
+button:focus { outline: none; box-shadow: 0 0 0 2px #09090b, 0 0 0 4px #3f3f46; }
+button.primary { background: #fafafa; border-color: #fafafa; color: #09090b; font-weight: 600; }
+button.primary:hover { background: #e4e4e7; border-color: #e4e4e7; }
+button.danger { background: #1a1011; border-color: #3f1d22; color: #f87171; }
+button.danger:hover { background: #2a1417; border-color: #5c2730; }
+button.go { background: #18181b; border-color: #3f3f46; color: #fafafa; font-weight: 600; }
+button.go:hover { background: #232327; border-color: #52525b; }
+
+/* Inputs */
+input[type=text] {
+  background: #0c0c0e; border: 1px solid #27272a; border-radius: 8px;
+  color: #fafafa; padding: 8px 11px; font-size: 13px; font-family: inherit; min-width: 240px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input[type=text]:focus { outline: none; border-color: #52525b; box-shadow: 0 0 0 3px rgba(250,250,250,.06); }
+
+/* Mode list */
+.modes label {
+  display: block; background: #0c0c0e; border: 1px solid #27272a; border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 8px; cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+.modes label:hover { border-color: #3f3f46; background: #111114; }
+.modes label.rec { border-color: #52525b; background: #131316; box-shadow: inset 0 0 0 1px #2c2c31; }
+.modes input[type=radio] { margin-right: 8px; vertical-align: middle; }
+.modes .mname { font-family: Consolas, "Cascadia Mono", monospace; color: #fafafa; font-weight: 600; font-size: 13px; }
+.modes .mrec {
+  display:inline-block; background:#fafafa; color:#09090b; font-size:10px; font-weight:700;
+  padding:1px 7px; border-radius:20px; margin-left:8px; vertical-align: middle; letter-spacing: .02em;
+}
+.modes .mdesc { color: #a1a1aa; font-size: 12.5px; display:block; margin-top:5px; line-height:1.5; padding-left: 22px; }
+
+/* Log */
+pre.log {
+  background: #060607; border: 1px solid #1f1f23; border-radius: 10px;
+  padding: 12px 14px; font-family: Consolas, "Cascadia Mono", monospace; font-size: 12px;
+  color: #d4d4d8; white-space: pre-wrap; word-wrap: break-word; max-height: 260px; overflow: auto; margin: 14px 0 0;
+}
+
+/* Switch row */
+.switch { display:flex; align-items:center; }
+.switch > * { margin-right: 12px; }
+.switch input[type=checkbox] { width:16px; height:16px; vertical-align: middle; }
+
+/* Notes / info */
+.note { font-size: 12.5px; color: #a1a1aa; line-height:1.6; }
+.info b { color:#fafafa; font-weight: 600; }
+.info .mname { font-family: Consolas, monospace; color:#fafafa; background:#18181b; padding:1px 6px; border-radius:5px; border:1px solid #27272a; font-size: 12px; }
+hr.sep { border:0; border-top:1px solid #1f1f23; margin:16px 0; }
+
+/* Toast (shadcn-style) */
+.toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%);
+  background: #18181b; color:#fafafa; border:1px solid #27272a;
+  padding: 11px 18px; border-radius: 10px; font-size:13px; font-weight: 500;
+  display:none; z-index: 50; box-shadow: 0 8px 30px rgba(0,0,0,.6);
+}
+
+/* Overlay */
+#overlay {
+  position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(9,9,11,.82);
+  display:none; z-index: 100; text-align:center;
+}
+#overlay div { margin-top: 34vh; font-size: 15px; color:#fafafa; font-weight: 500; }
+.spin { color:#a1a1aa; }
+
+/* Language toggle visibility */
+body.lang-en .tr { display:none; }
+body.lang-tr .en { display:none; }
+</style>
+</head>
+<body class="lang-tr">
+<div class="wrap">
+
+  <header>
+    <h1>🛡️ GoodbyeDPI Panel<small class="tr">DPI / DNS engellemelerini kolayca yönet</small><small class="en">Easily manage DPI / DNS bypass settings</small></h1>
+    <button id="btnLang">TR / EN</button>
+  </header>
+
+  <!-- DURUM & SERVIS -->
+  <div class="card">
+    <h2><span class="tr">1) Durum &amp; Servis</span><span class="en">1) Status &amp; Service</span></h2>
+    <div class="statusline">
+      <span><span class="k tr">Servis:</span><span class="k en">Service:</span> <span id="statusBadge" class="badge warn">...</span></span>
+      <span><span class="k tr">Aktif mod:</span><span class="k en">Active mode:</span> <span id="modeNow" class="mode-now">-</span></span>
+    </div>
+    <div class="row">
+      <button id="btnInstall" class="primary"><span class="tr">Kur</span><span class="en">Install</span></button>
+      <button id="btnStart"><span class="tr">Başlat</span><span class="en">Start</span></button>
+      <button id="btnStop"><span class="tr">Durdur</span><span class="en">Stop</span></button>
+      <button id="btnRestart"><span class="tr">Yeniden Başlat</span><span class="en">Restart</span></button>
+      <button id="btnUninstall" class="danger"><span class="tr">Kaldır</span><span class="en">Uninstall</span></button>
+      <button id="btnRefresh"><span class="tr">Yenile</span><span class="en">Refresh</span></button>
+    </div>
+    <p class="note" style="margin-top:12px">
+      <span class="tr">"Kur" servisi otomatik başlangıçlı olarak kaydeder — bilgisayar her açıldığında kendiliğinden çalışır, pencere/CMD açılmaz. Seçili mod (aşağıdaki bölüm) ile kurulur.</span>
+      <span class="en">"Install" registers the service with auto-start — it runs on every boot silently, no window/CMD. It installs with the mode selected below.</span>
+    </p>
+  </div>
+
+  <!-- MOD SECICI -->
+  <div class="card">
+    <h2><span class="tr">2) Mod Seçimi (ne işe yarar?)</span><span class="en">2) Mode Selection (what it does)</span></h2>
+    <p class="desc">
+      <span class="tr">Modlar, engellemeyi aşma tekniğini belirler. Her site farklı yöntemle engellenebildiği için tek doğru mod yoktur — bir site açılmıyorsa modu değiştir. Aşağıdaki ⭐ önerilen mod çoğu Türkiye engellemesini kapsar.</span>
+      <span class="en">Modes set the bypass technique. Different sites are blocked differently, so there is no single right mode — if a site won't open, change the mode. The ⭐ recommended one below covers most blocks in Turkey.</span>
+    </p>
+    <div class="modes">
+      <label class="rec"><input type="radio" name="mode" value="-5 --set-ttl 3" checked>
+        <span class="mname">-5 --set-ttl 3</span><span class="mrec">⭐ ÖNERİLEN / RECOMMENDED</span>
+        <span class="mdesc tr">Hem bağlantıyı koparan (RST) hem sessizce düşüren DPI'yi birden aşar. Çoğu modern engellemede çalışır. Açılmazsa "set-ttl 4" dene.</span>
+        <span class="mdesc en">Bypasses both RST-injecting and silent-drop DPI at once. Works on most modern blocks. If it fails, try "set-ttl 4".</span></label>
+      <label><input type="radio" name="mode" value="-5 --set-ttl 4">
+        <span class="mname">-5 --set-ttl 4</span>
+        <span class="mdesc tr">Üstekinin TTL=4 varyantı. Ağ yolun farklıysa bu tutabilir.</span>
+        <span class="mdesc en">Same as above but TTL=4. Works if your network path differs.</span></label>
+      <label><input type="radio" name="mode" value="-1">
+        <span class="mname">-1</span>
+        <span class="mdesc tr">En hafif ve en hızlı. Basit engellemelerde yeterli, bağlantıyı en az yorar.</span>
+        <span class="mdesc en">Lightest and fastest. Enough for simple blocks, least overhead.</span></label>
+      <label><input type="radio" name="mode" value="-2">
+        <span class="mname">-2</span>
+        <span class="mdesc tr">Hafif, farklı parçalama boyutu. -1 işe yaramazsa dene.</span>
+        <span class="mdesc en">Light, different fragment size. Try if -1 doesn't work.</span></label>
+      <label><input type="radio" name="mode" value="-4">
+        <span class="mname">-4</span>
+        <span class="mdesc tr">En basit/pasif mod. Çok az müdahale eder.</span>
+        <span class="mdesc en">Simplest/passive mode. Minimal interference.</span></label>
+      <label><input type="radio" name="mode" value="-5">
+        <span class="mname">-5</span>
+        <span class="mdesc tr">Orta-güçlü. Modern DPI için iyi başlangıç (ama bazı sessiz-drop sitelerde tek başına yetmez).</span>
+        <span class="mdesc en">Medium-strong. Good start for modern DPI (but alone may miss silent-drop sites).</span></label>
+      <label><input type="radio" name="mode" value="-6">
+        <span class="mname">-6</span>
+        <span class="mdesc tr">-5'in farklı varyantı (wrong-seq tekniği). Bazı ISP'lerde işe yarar.</span>
+        <span class="mdesc en">Variant of -5 (wrong-seq technique). Works on some ISPs.</span></label>
+      <label><input type="radio" name="mode" value="-9">
+        <span class="mname">-9</span>
+        <span class="mdesc tr">En agresif/kombine mod. Zor durumlar için; bazı siteleri yavaşlatabilir.</span>
+        <span class="mdesc en">Most aggressive/combined. For hard cases; may slow some sites.</span></label>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <button id="btnApplyMode" class="primary"><span class="tr">Seçili Modu Uygula</span><span class="en">Apply Selected Mode</span></button>
+    </div>
+  </div>
+
+  <!-- OTOMATIK MOD BULUCU -->
+  <div class="card">
+    <h2><span class="tr">3) 🪄 Otomatik En İyi Modu Bul</span><span class="en">3) 🪄 Auto-Find Best Mode</span></h2>
+    <p class="desc">
+      <span class="tr">Açılmayan bir site adresi yaz, panel modları tek tek deneyip o siteyi açan modu otomatik bulur ve uygular. Genel internetin bozulmadığını da kontrol eder. Bu işlem ~30-60 sn sürer.</span>
+      <span class="en">Type a site that won't open; the panel tries each mode, finds the one that opens it, and applies it. It also checks that general internet still works. Takes ~30-60s.</span>
+    </p>
+    <div class="row">
+      <input type="text" id="autoInput" value="example.com">
+      <button id="btnAuto" class="go"><span class="tr">Otomatik Bul &amp; Uygula</span><span class="en">Auto-Find &amp; Apply</span></button>
+    </div>
+    <pre class="log" id="autoLog" style="display:none"></pre>
+  </div>
+
+  <!-- DNS / DoH -->
+  <div class="card">
+    <h2><span class="tr">4) DNS Şifreleme (DoH)</span><span class="en">4) Encrypted DNS (DoH)</span></h2>
+    <p class="desc">
+      <span class="tr">Bazı siteler DNS katmanında engellenir (adres IP'ye çevrilemez). DNS-over-HTTPS, DNS sorgularını şifreler (443 üzerinden) ve bu engeli aşar. Google DNS (8.8.8.8) kullanılır.</span>
+      <span class="en">Some sites are blocked at the DNS layer (the name can't resolve to an IP). DNS-over-HTTPS encrypts DNS queries (over 443) and bypasses this. Uses Google DNS (8.8.8.8).</span>
+    </p>
+    <div class="switch">
+      <label class="switch"><input type="checkbox" id="chkDoH"> <span><span class="tr">DoH'u Aç</span><span class="en">Enable DoH</span></span></label>
+      <span><span class="k tr">Durum:</span><span class="k en">Status:</span> <span id="dohBadge" class="badge warn">...</span></span>
+    </div>
+  </div>
+
+  <!-- SITE TESTI -->
+  <div class="card">
+    <h2><span class="tr">5) Site Erişim Testi</span><span class="en">5) Site Access Test</span></h2>
+    <p class="desc">
+      <span class="tr">Bir adres gir; DNS çözümleme ve HTTPS bağlantısı çalışıyor mu kontrol eder.</span>
+      <span class="en">Enter an address; checks whether DNS resolution and the HTTPS connection work.</span>
+    </p>
+    <div class="row">
+      <input type="text" id="testInput" value="example.com">
+      <button id="btnTest" class="primary"><span class="tr">Test Et</span><span class="en">Test</span></button>
+    </div>
+    <pre class="log" id="testLog" style="display:none"></pre>
+  </div>
+
+  <!-- BILGI -->
+  <div class="card info">
+    <h2><span class="tr">❔ Bu ayarlar ne işe yarıyor?</span><span class="en">❔ What do these settings do?</span></h2>
+    <p class="note">
+      <span class="tr"><b>DPI (Derin Paket İncelemesi):</b> İnternet sağlayıcın trafiğine bakıp hangi siteye gittiğini anlar ve engeller. GoodbyeDPI, bu incelemeyi şaşırtacak şekilde paketleri parçalar/değiştirir.<br><br>
+      <b>SNI engelleme:</b> HTTPS bağlanırken hangi siteye gittiğin (örn. example.com) açık yazılır. DPI bunu görüp ya bağlantıyı koparır (RST) ya da sessizce düşürür. GoodbyeDPI bu bilgiyi gizler.<br><br>
+      <b>DNS engelleme:</b> Site adının IP adresine çevrilmesi bozulur. DoH (DNS-over-HTTPS) sorguları şifreleyerek bunu aşar.<br><br>
+      <b>Özet:</b> Bir site açılmıyorsa: önce DoH'u aç, sonra "Otomatik Bul" ile doğru modu buldur. Çoğu durumda <span class="mname">-5 --set-ttl 3</span> + DoH yeterli.</span>
+      <span class="en"><b>DPI (Deep Packet Inspection):</b> Your ISP inspects your traffic to detect and block which site you visit. GoodbyeDPI fragments/alters packets to confuse this inspection.<br><br>
+      <b>SNI blocking:</b> When connecting via HTTPS, the target site name (e.g. example.com) is sent in clear text. DPI sees it and either resets (RST) or silently drops the connection. GoodbyeDPI hides this.<br><br>
+      <b>DNS blocking:</b> Resolving a site name to its IP is sabotaged. DoH (DNS-over-HTTPS) encrypts queries to bypass it.<br><br>
+      <b>In short:</b> If a site won't open: enable DoH first, then use "Auto-Find" to detect the right mode. Usually <span class="mname">-5 --set-ttl 3</span> + DoH is enough.</span>
+    </p>
+    <hr class="sep">
+    <p class="note tr">GoodbyeDPI bir DPI atlatma aracıdır (github.com/ValdikSS/GoodbyeDPI). Bu panel yalnızca servisi ve ayarları yönetir.</p>
+    <p class="note en">GoodbyeDPI is a DPI circumvention tool (github.com/ValdikSS/GoodbyeDPI). This panel only manages the service and settings.</p>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="overlay"><div><span class="spin">⏳ </span><span class="tr">Lütfen bekleyin...</span><span class="en">Please wait...</span></div></div>
+
+<script language="JScript">
+var wsh, fso, sh, ExePath, SVC = "GoodbyeDPI";
+var gModes, gIdx, gHost, gWinner;
+
+function $(id){ return document.getElementById(id); }
+function trim(s){ return (s||"").replace(/^\s+|\s+$/g, ""); }
+
+window.onload = function(){
+  try {
+    wsh = new ActiveXObject("WScript.Shell");
+    fso = new ActiveXObject("Scripting.FileSystemObject");
+    sh  = new ActiveXObject("Shell.Application");
+  } catch(e){
+    alert("ActiveX olusturulamadi / cannot create ActiveX: " + e.message);
+    return;
+  }
+  ExePath = HtaDir() + "goodbyedpi.exe";
+
+  // Yonetici degilse kendini yukselt (mshta.exe'yi yukseltip .hta'yi arguman ver)
+  if (!IsElevated()){
+    wsh.Run("powershell -NoProfile -Command \"$p=[char]34+'" + HtaPath() + "'+[char]34; Start-Process mshta.exe -ArgumentList $p -Verb RunAs\"", 0, false);
+    window.close();
+    return;
+  }
+
+  WireEvents();
+  RefreshStatus();
+};
+
+function HtaPath(){
+  var p = unescape(location.pathname);
+  if (p.charAt(0) == "/") p = p.substring(1);
+  return p.replace(/\//g, "\\");
+}
+function HtaDir(){
+  var p = HtaPath();
+  return p.substring(0, p.lastIndexOf("\\") + 1);
+}
+
+function IsElevated(){
+  var o = RunCapture("whoami /groups");
+  return o.indexOf("S-1-16-12288") >= 0;  // High Mandatory Level
+}
+
+function WireEvents(){
+  $("btnLang").onclick      = ToggleLang;
+  $("btnInstall").onclick   = DoInstall;
+  $("btnStart").onclick     = DoStart;
+  $("btnStop").onclick      = DoStop;
+  $("btnRestart").onclick   = DoRestart;
+  $("btnUninstall").onclick = DoUninstall;
+  $("btnRefresh").onclick   = RefreshStatus;
+  $("btnApplyMode").onclick = DoApply;
+  $("btnAuto").onclick      = AutoStart;
+  $("chkDoH").onclick       = DoHToggle;
+  $("btnTest").onclick      = DoTest;
+}
+
+// ---------- yardimcilar ----------
+function RunCapture(cmdline){
+  var tmp = wsh.ExpandEnvironmentStrings("%TEMP%") + "\\gdpi_panel_out.txt";
+  var txt = "";
+  try {
+    wsh.Run('cmd /c ' + cmdline + ' > "' + tmp + '" 2>&1', 0, true);
+    if (fso.FileExists(tmp)){
+      var f = fso.OpenTextFile(tmp, 1, false);
+      if (!f.AtEndOfStream) txt = f.ReadAll();
+      f.Close();
+    }
+  } catch(e){}
+  return txt;
+}
+
+function Pause(sec){ try { wsh.Run('cmd /c ping -n ' + (sec+1) + ' 127.0.0.1', 0, true); } catch(e){} }
+
+function Bi(t, e){ return '<span class="tr">' + t + '</span><span class="en">' + e + '</span>'; }
+
+function BinArg(mode){ return '"\\"' + ExePath + '\\" ' + mode + '"'; }
+
+function Busy(b){ $("overlay").style.display = b ? "block" : "none"; }
+
+var toastTimer = null;
+function Toast(msg){
+  var t = $("toast");
+  t.innerHTML = msg;
+  t.style.display = "block";
+  if (toastTimer) window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(function(){ $("toast").style.display = "none"; }, 2600);
+}
+
+function ToggleLang(){
+  document.body.className = (document.body.className == "lang-tr") ? "lang-en" : "lang-tr";
+}
+
+function SelectedMode(){
+  var els = document.getElementsByName("mode");
+  for (var i = 0; i < els.length; i++){ if (els[i].checked) return els[i].value; }
+  return "-5 --set-ttl 3";
+}
+
+function ServiceInstalled(){
+  var q = RunCapture("sc query " + SVC);
+  return !(q.indexOf("1060") >= 0 || trim(q).length === 0);
+}
+
+function CurrentMode(){
+  var qc = RunCapture("sc qc " + SVC);
+  var i = qc.toLowerCase().indexOf('goodbyedpi.exe"');
+  if (i < 0) return "";
+  var p = qc.substring(i + "goodbyedpi.exe".length + 1).replace(/\r/g, "");
+  var nl = p.indexOf("\n");
+  if (nl >= 0) p = p.substring(0, nl);
+  return trim(p);
+}
+
+// ---------- servis islemleri ----------
+function SetServiceMode(mode){
+  if (ServiceInstalled()){
+    RunCapture("sc stop " + SVC);
+    Pause(1);
+    RunCapture("sc config " + SVC + " binPath= " + BinArg(mode));
+  } else {
+    RunCapture("sc create " + SVC + " binPath= " + BinArg(mode) + " start= auto DisplayName= " + SVC);
+    RunCapture('sc description ' + SVC + ' "GoodbyeDPI - DPI bypass (otomatik baslatma)"');
+    RunCapture("sc failure " + SVC + " reset= 0 actions= restart/5000/restart/5000/restart/5000");
+  }
+  RunCapture("sc start " + SVC);
+}
+
+function defer(fn){ Busy(true); window.setTimeout(function(){ try { fn(); } catch(e){ alert(e.message); } Busy(false); RefreshStatus(); }, 60); }
+
+function DoInstall(){ defer(function(){ SetServiceMode(SelectedMode()); Toast(Bi("Servis kuruldu ve başlatıldı.","Service installed and started.")); }); }
+function DoApply(){ defer(function(){ SetServiceMode(SelectedMode()); Toast(Bi("Mod uygulandı: ","Mode applied: ") + SelectedMode()); }); }
+function DoStart(){ defer(function(){ RunCapture("sc start " + SVC); Toast(Bi("Başlatıldı.","Started.")); }); }
+function DoStop(){ defer(function(){ RunCapture("sc stop " + SVC); Toast(Bi("Durduruldu.","Stopped.")); }); }
+function DoRestart(){ defer(function(){ RunCapture("sc stop " + SVC); Pause(2); RunCapture("sc start " + SVC); Toast(Bi("Yeniden başlatıldı.","Restarted.")); }); }
+
+function DoUninstall(){
+  if (!window.confirm("GoodbyeDPI servisini kaldırmak istediğine emin misin? / Remove the GoodbyeDPI service?")) return;
+  defer(function(){
+    RunCapture("sc stop " + SVC); Pause(2);
+    RunCapture("sc delete " + SVC);
+    RunCapture("sc stop WinDivert");
+    RunCapture("sc delete WinDivert");
+    Toast(Bi("Servis kaldırıldı.","Service removed."));
+  });
+}
+
+// ---------- durum ----------
+function RefreshStatus(){
+  var q = RunCapture("sc query " + SVC);
+  var b = $("statusBadge");
+  if (q.indexOf("1060") >= 0 || trim(q).length === 0){
+    b.className = "badge stop"; b.innerHTML = Bi("⚪ Kurulu değil","⚪ Not installed");
+    $("modeNow").innerHTML = "-";
+  } else {
+    if (q.indexOf("RUNNING") >= 0){
+      b.className = "badge ok"; b.innerHTML = Bi("🟢 Çalışıyor","🟢 Running");
+    } else if (q.indexOf("STOPPED") >= 0){
+      b.className = "badge stop"; b.innerHTML = Bi("🔴 Durduruldu","🔴 Stopped");
+    } else {
+      b.className = "badge warn"; b.innerHTML = Bi("🟡 Geçiş","🟡 Pending");
+    }
+    var m = CurrentMode();
+    $("modeNow").innerHTML = (m === "") ? "(parametresiz / no params)" : m;
+  }
+  // DoH durumu
+  var d = trim(RunCapture("powershell -NoProfile -Command \"$x=Get-DnsClientDohServerAddress -EA SilentlyContinue | ? {$_.ServerAddress -eq '8.8.8.8'}; if($x -and $x.AutoUpgrade){'ON'}else{'OFF'}\""));
+  var db = $("dohBadge");
+  if (d.indexOf("ON") >= 0){
+    $("chkDoH").checked = true;
+    db.className = "badge ok"; db.innerHTML = Bi("🟢 Açık","🟢 On");
+  } else {
+    $("chkDoH").checked = false;
+    db.className = "badge stop"; db.innerHTML = Bi("🔴 Kapalı","🔴 Off");
+  }
+}
+
+// ---------- DoH ----------
+function DoHToggle(){
+  var want = $("chkDoH").checked;
+  defer(function(){
+    if (want){
+      RunCapture("netsh dns add encryption server=8.8.8.8 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
+      RunCapture("netsh dns add encryption server=8.8.4.4 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
+      var adp = trim(RunCapture("powershell -NoProfile -Command \"(Get-NetAdapter | ? {$_.Status -eq 'Up'} | Sort-Object ifIndex | Select -First 1).Name\""));
+      if (adp !== ""){
+        RunCapture('netsh interface ipv4 set dnsservers name="' + adp + '" static 8.8.8.8 primary');
+        RunCapture('netsh interface ipv4 add dnsservers name="' + adp + '" 8.8.4.4 index=2');
+      }
+      RunCapture("ipconfig /flushdns");
+      Toast(Bi("DoH açıldı.","DoH enabled."));
+    } else {
+      RunCapture("netsh dns delete encryption server=8.8.8.8");
+      RunCapture("netsh dns delete encryption server=8.8.4.4");
+      RunCapture("ipconfig /flushdns");
+      Toast(Bi("DoH kapatıldı.","DoH disabled."));
+    }
+  });
+}
+
+// ---------- site testi ----------
+function cleanHost(v){
+  var h = trim(v).replace(/^https?:\/\//i, "");
+  var s = h.indexOf("/");
+  if (s >= 0) h = h.substring(0, s);
+  return h;
+}
+
+function DoTest(){
+  var h = cleanHost($("testInput").value);
+  if (h === ""){ Toast(Bi("Önce bir adres yaz.","Enter an address first.")); return; }
+  var lg = $("testLog");
+  lg.style.display = "block";
+  lg.innerText = "...";
+  Busy(true);
+  window.setTimeout(function(){
+    var ps = "$h='" + h + "'; try{$a=Resolve-DnsName $h -Type A -EA Stop|?{$_.IPAddress}; 'DNS : OK  -> '+($a.IPAddress -join ', ')}catch{'DNS : FAIL (cozumlenemedi)'}; try{$r=Invoke-WebRequest ('https://'+$h) -Method Head -TimeoutSec 15 -MaximumRedirection 3 -UseBasicParsing; 'HTTP: OK  -> '+$r.StatusCode+' '+$r.StatusDescription}catch{'HTTP: FAIL -> '+$_.Exception.Message}";
+    var res = RunCapture("powershell -NoProfile -Command \"" + ps + "\"");
+    $("testLog").innerText = res;
+    Busy(false);
+  }, 60);
+}
+
+// ---------- otomatik mod bulucu ----------
+function AutoStart(){
+  gHost = cleanHost($("autoInput").value);
+  if (gHost === ""){ Toast(Bi("Önce bir site adresi yaz.","Enter a site first.")); return; }
+  gModes = ["-5 --set-ttl 3", "-5 --set-ttl 4", "-5", "-2", "-1", "-6", "-9", "-4"];
+  gIdx = 0; gWinner = "";
+  var lg = $("autoLog");
+  lg.style.display = "block";
+  lg.innerHTML = "<b>" + gHost + "</b> için en iyi mod aranıyor... / searching best mode...<br>";
+  Busy(true);
+  RunCapture("sc stop " + SVC);
+  RunCapture("taskkill /IM goodbyedpi.exe /F");
+  Pause(2);
+  window.setTimeout(AutoStep, 400);
+}
+
+function AutoStep(){
+  var lg = $("autoLog");
+  if (gWinner !== "" || gIdx > gModes.length - 1){ AutoFinish(); return; }
+  var m = gModes[gIdx];
+  try { wsh.Run('"' + ExePath + '" ' + m, 0, false); } catch(e){}
+  Pause(3);
+  var res = TestMode(gHost);
+  RunCapture("taskkill /IM goodbyedpi.exe /F");
+  lg.innerHTML += '&nbsp;&nbsp;<span style="font-family:Consolas">' + m + '</span> &rarr; ' + res + "<br>";
+  lg.scrollTop = lg.scrollHeight;
+  if (res.indexOf("SITE:OK") >= 0 && res.indexOf("NET:OK") >= 0) gWinner = m;
+  gIdx++;
+  Pause(1);
+  window.setTimeout(AutoStep, 250);
+}
+
+function TestMode(host){
+  var ps = "function T($u){try{Invoke-WebRequest $u -Method Head -TimeoutSec 8 -MaximumRedirection 3 -UseBasicParsing | Out-Null;'OK'}catch{'FAIL'}}; 'SITE:'+(T('https://" + host + "'))+' NET:'+(T('https://www.google.com'))";
+  return trim(RunCapture("powershell -NoProfile -Command \"" + ps + "\""));
+}
+
+function AutoFinish(){
+  var lg = $("autoLog");
+  RunCapture("taskkill /IM goodbyedpi.exe /F");
+  if (gWinner !== ""){
+    SetServiceMode(gWinner);
+    var els = document.getElementsByName("mode");
+    for (var i = 0; i < els.length; i++){ els[i].checked = (els[i].value == gWinner); }
+    lg.innerHTML += '<br><b style="color:#4ade80">✔ Bulundu &amp; uygulandı / Found &amp; applied: ' + gWinner + '</b>';
+    Toast(Bi("Çalışan mod uygulandı: ","Working mode applied: ") + gWinner);
+  } else {
+    SetServiceMode(SelectedMode());
+    lg.innerHTML += '<br><b style="color:#f87171">✖ Çalışan mod bulunamadı. DoH\'u açıp tekrar dene. / No working mode found. Enable DoH and retry.</b>';
+    Toast(Bi("Çalışan mod bulunamadı.","No working mode found."));
+  }
+  Busy(false);
+  RefreshStatus();
+}
+</script>
+</body>
+</html>
