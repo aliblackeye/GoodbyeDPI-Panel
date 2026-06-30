@@ -2,9 +2,11 @@
 
 **Türkçe** | [English](#-english)
 
+![GoodbyeDPI Panel](screenshot.png)
+
 [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) için, kullanımı **çok kolay** bir Windows kontrol paneli. DPI (Derin Paket İncelemesi) ve DNS engellemelerini aşmak için GoodbyeDPI'yi bir **Windows servisi** olarak kurar, ayarlarını tek bir pencereden yönetmeni sağlar. Tek dosya, kurulum gerektirmez.
 
-> "Mala anlatır gibi" tasarlandı — her ayarın ne işe yaradığı sade dille anlatılır.
+> Yeni başlayanlar için sade ve anlaşılır arayüz — her ayarın ne işe yaradığı açıkça yazılır.
 
 ---
 
@@ -22,8 +24,8 @@
 ## 📦 Kurulum
 
 1. [GoodbyeDPI'nin son sürümünü](https://github.com/ValdikSS/GoodbyeDPI/releases) indir ve bir klasöre çıkar (içinde `goodbyedpi.exe` olmalı).
-2. Bu depodaki **`GoodbyeDPI-Panel.hta`** ve **`Panel-Baslat.cmd`** dosyalarını **`goodbyedpi.exe` ile aynı klasöre** kopyala.
-3. **`Panel-Baslat.cmd`**'ye çift tıkla → çıkan **UAC penceresine "Evet"** de.
+2. Bu depodaki **`GoodbyeDPI-Panel.hta`** ve **`Start-Panel.cmd`** dosyalarını **`goodbyedpi.exe` ile aynı klasöre** kopyala.
+3. **`Start-Panel.cmd`**'ye çift tıkla → çıkan **UAC penceresine "Evet"** de.
 
 > Panel yönetici yetkisiyle çalışmak zorundadır (servis ve DNS ayarlarını değiştirebilmek için). Bu yüzden açılışta bir kez UAC sorar.
 
@@ -34,8 +36,10 @@ GoodbyeDPI\
 ├── goodbyedpi.exe
 ├── WinDivert.dll
 ├── WinDivert64.sys
-├── GoodbyeDPI-Panel.hta   ← arayüz
-└── Panel-Baslat.cmd       ← başlatıcı (buna çift tıkla)
+├── GoodbyeDPI-Panel.hta   ← arayüz / the panel
+├── Start-Panel.cmd        ← başlatıcı (buna çift tıkla) / launcher (double-click this)
+├── install.cmd            ← (opsiyonel) komut satırından servis kurar / (optional) CLI install
+└── uninstall.cmd          ← (opsiyonel) komut satırından servisi kaldırır / (optional) CLI uninstall
 ```
 
 ---
@@ -79,7 +83,7 @@ Modlar, engellemeyi aşma **tekniğini** belirler. Her site farklı yöntemle en
 
 - **Site hâlâ açılmıyor:** Önce **DoH'u aç**, sonra **Otomatik Bul** ile doğru modu buldur. Tarayıcıyı kapatıp aç.
 - **Tarayıcı kendi DNS'ini kullanıyor:** Chrome/Edge'de `Ayarlar → Gizlilik → Güvenli DNS`'i kapat (sistem DoH'u zaten hallediyor).
-- **Panel açılmıyor:** `.hta`'ya değil **`Panel-Baslat.cmd`**'ye çift tıkla ve UAC'ye "Evet" de.
+- **Panel açılmıyor:** `.hta`'ya değil **`Start-Panel.cmd`**'ye çift tıkla ve UAC'ye "Evet" de.
 - **Servisi tamamen kaldır:** Panelde **Kaldır**, veya yönetici komut isteminde: `sc stop GoodbyeDPI && sc delete GoodbyeDPI`.
 
 ---
@@ -104,7 +108,7 @@ Bu araç bir **sansür aşma / ağ tanılama** aracıdır. Yalnızca **yasal iç
 
 A **dead-simple** Windows control panel for [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI). It installs GoodbyeDPI as a **Windows service** to bypass DPI (Deep Packet Inspection) and DNS-based blocking, and lets you manage everything from one window. Single file, no installation needed.
 
-> Designed to be **explain-like-I'm-five** — every setting tells you what it does.
+> Clean, beginner-friendly UI — every setting explains what it does.
 
 ### ✨ Features
 
@@ -118,8 +122,8 @@ A **dead-simple** Windows control panel for [GoodbyeDPI](https://github.com/Vald
 ### 📦 Installation
 
 1. Download the [latest GoodbyeDPI release](https://github.com/ValdikSS/GoodbyeDPI/releases) and extract it (must contain `goodbyedpi.exe`).
-2. Copy **`GoodbyeDPI-Panel.hta`** and **`Panel-Baslat.cmd`** from this repo into the **same folder as `goodbyedpi.exe`**.
-3. Double-click **`Panel-Baslat.cmd`** → click **"Yes"** on the UAC prompt.
+2. Copy **`GoodbyeDPI-Panel.hta`** and **`Start-Panel.cmd`** from this repo into the **same folder as `goodbyedpi.exe`**.
+3. Double-click **`Start-Panel.cmd`** → click **"Yes"** on the UAC prompt.
 
 > The panel must run elevated (to change service and DNS settings), so it asks for UAC once at startup.
 
@@ -156,7 +160,7 @@ Modes set the bypass **technique**. Different sites are blocked differently, so 
 
 - **Site still won't open:** Enable **DoH** first, then run **Auto-Find**. Restart your browser.
 - **Browser uses its own DNS:** Disable `Settings → Privacy → Secure DNS` in Chrome/Edge (system DoH already handles it).
-- **Panel won't open:** Double-click **`Panel-Baslat.cmd`** (not the `.hta`) and accept UAC.
+- **Panel won't open:** Double-click **`Start-Panel.cmd`** (not the `.hta`) and accept UAC.
 - **Fully remove the service:** Click **Uninstall** in the panel, or in an admin prompt: `sc stop GoodbyeDPI && sc delete GoodbyeDPI`.
 
 ### ⚠️ Disclaimer
