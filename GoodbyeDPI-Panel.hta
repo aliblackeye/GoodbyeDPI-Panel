@@ -485,18 +485,22 @@ function RefreshStatus(){
 }
 
 // ---------- DoH ----------
+function EnableDoH(){
+  RunCapture("netsh dns add encryption server=8.8.8.8 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
+  RunCapture("netsh dns add encryption server=8.8.4.4 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
+  var adp = trim(RunCapture("powershell -NoProfile -Command \"(Get-NetAdapter | ? {$_.Status -eq 'Up'} | Sort-Object ifIndex | Select -First 1).Name\""));
+  if (adp !== ""){
+    RunCapture('netsh interface ipv4 set dnsservers name="' + adp + '" static 8.8.8.8 primary');
+    RunCapture('netsh interface ipv4 add dnsservers name="' + adp + '" 8.8.4.4 index=2');
+  }
+  RunCapture("ipconfig /flushdns");
+}
+
 function DoHToggle(){
   var want = $("chkDoH").checked;
   defer(function(){
     if (want){
-      RunCapture("netsh dns add encryption server=8.8.8.8 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
-      RunCapture("netsh dns add encryption server=8.8.4.4 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
-      var adp = trim(RunCapture("powershell -NoProfile -Command \"(Get-NetAdapter | ? {$_.Status -eq 'Up'} | Sort-Object ifIndex | Select -First 1).Name\""));
-      if (adp !== ""){
-        RunCapture('netsh interface ipv4 set dnsservers name="' + adp + '" static 8.8.8.8 primary');
-        RunCapture('netsh interface ipv4 add dnsservers name="' + adp + '" 8.8.4.4 index=2');
-      }
-      RunCapture("ipconfig /flushdns");
+      EnableDoH();
       Toast(Bi("DoH açıldı.","DoH enabled."));
     } else {
       RunCapture("netsh dns delete encryption server=8.8.8.8");
@@ -556,14 +560,14 @@ function AutoStep(){
   RunCapture("taskkill /IM goodbyedpi.exe /F");
   lg.innerHTML += '&nbsp;&nbsp;<span style="font-family:Consolas">' + m + '</span> &rarr; ' + res + "<br>";
   lg.scrollTop = lg.scrollHeight;
-  if (res.indexOf("SITE:OK") >= 0 && res.indexOf("NET:OK") >= 0) gWinner = m;
+  if (res.indexOf("SITE:OK") >= 0 && res.indexOf("NET:OK") >= 0 && res.indexOf("DISC:OK") >= 0) gWinner = m;
   gIdx++;
   Pause(1);
   window.setTimeout(AutoStep, 250);
 }
 
 function TestMode(host){
-  var ps = "function T($u){try{Invoke-WebRequest $u -Method Head -TimeoutSec 8 -MaximumRedirection 3 -UseBasicParsing | Out-Null;'OK'}catch{'FAIL'}}; 'SITE:'+(T('https://" + host + "'))+' NET:'+(T('https://www.google.com'))";
+  var ps = "function T($u){try{Invoke-WebRequest $u -Method Head -TimeoutSec 8 -MaximumRedirection 3 -UseBasicParsing | Out-Null;'OK'}catch{'FAIL'}}; 'SITE:'+(T('https://" + host + "'))+' NET:'+(T('https://www.google.com'))+' DISC:'+(T('https://discord.com'))";
   return trim(RunCapture("powershell -NoProfile -Command \"" + ps + "\""));
 }
 
@@ -634,10 +638,12 @@ function DoDownload(){
       try { fso.DeleteFile(ps1); } catch(e){}
 
       if (result.indexOf("SUCCESS") >= 0 && fso.FileExists(ExePath)){
-        lg.innerHTML = Bi("⏳ Servis kuruluyor...", "⏳ Installing service...");
+        lg.innerHTML = Bi("⏳ Servis kuruluyor ve DoH açılıyor...", "⏳ Installing service and enabling DoH...");
         SetServiceMode("-5 --set-ttl 3");
+        EnableDoH();
+        $("chkDoH").checked = true;
         $("downloadCard").style.display = "none";
-        Toast(Bi("GoodbyeDPI kuruldu ve başlatıldı!","GoodbyeDPI installed and started!"));
+        Toast(Bi("GoodbyeDPI + DoH kuruldu!","GoodbyeDPI + DoH installed!"));
       } else {
         var err = result.indexOf("ERROR:") >= 0 ? result.substring(result.indexOf("ERROR:") + 6) : result;
         lg.innerHTML = '<b style="color:#f87171">' + Bi("İndirme başarısız: ","Download failed: ") + trim(err) + "</b>";

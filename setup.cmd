@@ -98,12 +98,32 @@ rem Servisi baslat
 sc start "%NAME%"
 
 echo.
+echo  [..] DoH aciliyor / Enabling DoH (DNS encryption)...
+
+netsh dns add encryption server=8.8.8.8 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no >nul 2>&1
+netsh dns add encryption server=8.8.4.4 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no >nul 2>&1
+
+for /f "delims=" %%A in ('powershell -NoProfile -Command "(Get-NetAdapter | ? {$_.Status -eq 'Up'} | Sort-Object ifIndex | Select -First 1).Name"') do set "ADAPTER=%%A"
+if defined ADAPTER (
+    netsh interface ipv4 set dnsservers name="%ADAPTER%" static 8.8.8.8 primary >nul 2>&1
+    netsh interface ipv4 add dnsservers name="%ADAPTER%" 8.8.4.4 index=2 >nul 2>&1
+)
+ipconfig /flushdns >nul 2>&1
+
+echo  [OK] DoH acildi / DoH enabled
+
+echo.
 echo  ================================================
 echo   [OK] Kurulum tamamlandi! / Setup complete!
 echo.
 echo   Servis kuruldu ve baslatildi.
 echo   Service installed and started.
+echo   DoH (DNS sifreleme) acildi.
+echo   DoH (DNS encryption) enabled.
 echo   Mod / Mode: %MODE%
+echo.
+echo   Bir site acilmiyorsa panelden
+echo   "Otomatik Bul" ile dogru modu buldur.
 echo  ================================================
 echo.
 
