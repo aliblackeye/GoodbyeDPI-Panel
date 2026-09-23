@@ -25,7 +25,12 @@ sc delete "%NAME%" >nul 2>&1
 timeout /t 1 /nobreak >nul
 
 echo Servis olusturuluyor...
-sc create "%NAME%" binPath= "\"%EXE%\" %MODE%" start= auto DisplayName= "GoodbyeDPI"
+set "BL=%~dp0blacklist.txt"
+if exist "%BL%" (
+    sc create "%NAME%" binPath= "\"%EXE%\" %MODE% --blacklist \"%BL%\"" start= auto DisplayName= "GoodbyeDPI"
+) else (
+    sc create "%NAME%" binPath= "\"%EXE%\" %MODE%" start= auto DisplayName= "GoodbyeDPI"
+)
 sc description "%NAME%" "GoodbyeDPI - DPI bypass (otomatik baslatma)"
 sc failure "%NAME%" reset= 0 actions= restart/5000/restart/5000/restart/5000
 

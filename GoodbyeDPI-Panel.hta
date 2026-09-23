@@ -281,6 +281,20 @@ body.lang-tr .en { display:none; }
     <pre class="log" id="testLog" style="display:none"></pre>
   </div>
 
+  <!-- BLACKLIST -->
+  <div class="card">
+    <h2><span class="tr">6) Bypass Uygulanacak Siteler</span><span class="en">6) Sites to Bypass</span></h2>
+    <p class="desc">
+      <span class="tr">GoodbyeDPI <b>sadece</b> aşağıdaki sitelere bypass uygular. Discord, YouTube gibi diğer siteler <b>hiç etkilenmez</b>. Düzenledikten sonra "Kaydet"e bas, ardından yukarıdan "Seçili Modu Uygula" ile servisi güncelle.</span>
+      <span class="en">GoodbyeDPI applies bypass <b>only</b> to the sites below. Other sites like Discord, YouTube are <b>not affected</b>. After editing, click "Save", then "Apply Selected Mode" above to update the service.</span>
+    </p>
+    <textarea id="blEdit" rows="8" style="width:100%; background:#0c0c0e; border:1px solid #27272a; border-radius:8px; color:#fafafa; padding:10px; font-family:Consolas,monospace; font-size:12px"></textarea>
+    <div class="row" style="margin-top:8px">
+      <button id="btnBlSave" class="primary"><span class="tr">Kaydet</span><span class="en">Save</span></button>
+      <span class="note" style="margin-left:12px"><span class="tr">Her satıra bir site adresi yaz (ör. pornhub.com). Alt alan adları otomatik dahildir.</span><span class="en">One domain per line (e.g. pornhub.com). Subdomains are included automatically.</span></span>
+    </div>
+  </div>
+
   <!-- BILGI -->
   <div class="card info">
     <h2><span class="tr">❔ Bu ayarlar ne işe yarıyor?</span><span class="en">❔ What do these settings do?</span></h2>
@@ -331,6 +345,7 @@ window.onload = function(){
 
   WireEvents();
   CheckExe();
+  RenderBlacklist();
   RefreshStatus();
 };
 
@@ -362,6 +377,7 @@ function WireEvents(){
   $("chkDoH").onclick       = DoHToggle;
   $("btnTest").onclick      = DoTest;
   if ($("btnDownload")) $("btnDownload").onclick = DoDownload;
+  $("btnBlSave").onclick = SaveBlacklist;
 }
 
 // ---------- yardimcilar ----------
@@ -383,7 +399,13 @@ function Pause(sec){ try { wsh.Run('cmd /c ping -n ' + (sec+1) + ' 127.0.0.1', 0
 
 function Bi(t, e){ return '<span class="tr">' + t + '</span><span class="en">' + e + '</span>'; }
 
-function BinArg(mode){ return '"\\"' + ExePath + '\\" ' + mode + '"'; }
+function BinArg(mode){
+  var bl = HtaDir() + "blacklist.txt";
+  var arg = '"\\"' + ExePath + '\\" ' + mode;
+  if (fso.FileExists(bl)) arg += ' --blacklist \\"' + bl + '\\"';
+  arg += '"';
+  return arg;
+}
 
 function Busy(b){ $("overlay").style.display = b ? "block" : "none"; }
 
@@ -587,6 +609,28 @@ function AutoFinish(){
   }
   Busy(false);
   RefreshStatus();
+}
+
+// ---------- blacklist ----------
+function RenderBlacklist(){
+  var bl = HtaDir() + "blacklist.txt";
+  var content = "";
+  if (fso.FileExists(bl)){
+    try {
+      var f = fso.OpenTextFile(bl, 1, false);
+      if (!f.AtEndOfStream) content = f.ReadAll();
+      f.Close();
+    } catch(e){}
+  }
+  $("blEdit").value = content;
+}
+
+function SaveBlacklist(){
+  var bl = HtaDir() + "blacklist.txt";
+  var f = fso.CreateTextFile(bl, true);
+  f.Write($("blEdit").value);
+  f.Close();
+  Toast(Bi("Liste kaydedildi. Uygulamak için 'Seçili Modu Uygula'ya tıkla.","List saved. Click 'Apply Selected Mode' to apply."));
 }
 
 // ---------- exe kontrol & indirme ----------
