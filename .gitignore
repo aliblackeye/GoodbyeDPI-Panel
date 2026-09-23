@@ -10,6 +10,10 @@ x86_64/
 # Panel gecici ciktilari
 gdpi_panel_out.txt
 
+# Indirme gecici dosyalari
+goodbyedpi_download.zip
+goodbyedpi_tmp/
+
 # Sistem
 Thumbs.db
 desktop.ini

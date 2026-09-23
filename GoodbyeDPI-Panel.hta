@@ -54,6 +54,10 @@ h1 small { display:block; color: #a1a1aa; font-size: 12.5px; font-weight: 400; m
 .badge.stop { background: rgba(248,113,113,.10); color: #f87171; border-color: rgba(248,113,113,.26); }
 .badge.warn { background: rgba(251,191,36,.10);  color: #fbbf24; border-color: rgba(251,191,36,.26); }
 
+/* Download card */
+.card.download { border-color: rgba(251,191,36,.35); background: #0d0c08; }
+.card.download h2 { color: #fbbf24; }
+
 /* Rows / spacing (IE11'de flex gap yok -> margin) */
 .row { display: flex; flex-wrap: wrap; align-items: center; margin: -4px; }
 .row > button, .row > input { margin: 4px; }
@@ -151,6 +155,23 @@ body.lang-tr .en { display:none; }
     <h1>🛡️ GoodbyeDPI Panel<small class="tr">DPI / DNS engellemelerini kolayca yönet</small><small class="en">Easily manage DPI / DNS bypass settings</small></h1>
     <button id="btnLang">TR / EN</button>
   </header>
+
+  <!-- GoodbyeDPI INDIRME (yoksa gorunur) -->
+  <div class="card download" id="downloadCard" style="display:none">
+    <h2>⬇️ <span class="tr">GoodbyeDPI İndir</span><span class="en">Download GoodbyeDPI</span></h2>
+    <p class="desc">
+      <span class="tr">GoodbyeDPI dosyaları bu klasörde bulunamadı. Aşağıdaki düğmeye tıkla — otomatik olarak indirilip servis olarak kurulacak. Bilgisayar her açıldığında sessizce çalışacak.</span>
+      <span class="en">GoodbyeDPI files not found in this folder. Click below — it will be downloaded and installed as a service automatically. It will run silently on every boot.</span>
+    </p>
+    <div class="row">
+      <button id="btnDownload" class="primary" style="font-size:15px; padding:11px 22px">⬇️ <span class="tr">İndir ve Kur (Tek Tıkla)</span><span class="en">Download & Install (One Click)</span></button>
+    </div>
+    <pre class="log" id="downloadLog" style="display:none"></pre>
+    <p class="note" style="margin-top:10px">
+      <span class="tr">İndirme başarısız olursa: <a href="https://github.com/ValdikSS/GoodbyeDPI/releases" style="color:#60a5fa">github.com/ValdikSS/GoodbyeDPI/releases</a> adresinden manuel indir ve bu klasöre kopyala.</span>
+      <span class="en">If download fails: manually download from <a href="https://github.com/ValdikSS/GoodbyeDPI/releases" style="color:#60a5fa">github.com/ValdikSS/GoodbyeDPI/releases</a> and copy to this folder.</span>
+    </p>
+  </div>
 
   <!-- DURUM & SERVIS -->
   <div class="card">
@@ -309,6 +330,7 @@ window.onload = function(){
   }
 
   WireEvents();
+  CheckExe();
   RefreshStatus();
 };
 
@@ -339,6 +361,7 @@ function WireEvents(){
   $("btnAuto").onclick      = AutoStart;
   $("chkDoH").onclick       = DoHToggle;
   $("btnTest").onclick      = DoTest;
+  if ($("btnDownload")) $("btnDownload").onclick = DoDownload;
 }
 
 // ---------- yardimcilar ----------
@@ -560,6 +583,71 @@ function AutoFinish(){
   }
   Busy(false);
   RefreshStatus();
+}
+
+// ---------- exe kontrol & indirme ----------
+function CheckExe(){
+  if (!fso.FileExists(ExePath)){
+    $("downloadCard").style.display = "block";
+  }
+}
+
+function DoDownload(){
+  var lg = $("downloadLog");
+  lg.style.display = "block";
+  lg.innerHTML = Bi("⏳ GoodbyeDPI indiriliyor, lütfen bekleyin... (30-60 sn)", "⏳ Downloading GoodbyeDPI, please wait... (30-60s)");
+  Busy(true);
+
+  window.setTimeout(function(){
+    try {
+      var dir = HtaDir();
+      var tmpDir = wsh.ExpandEnvironmentStrings("%TEMP%");
+      var ps1 = tmpDir + "\\gdpi_download.ps1";
+
+      var f = fso.CreateTextFile(ps1, true);
+      f.WriteLine("$ProgressPreference='SilentlyContinue'");
+      f.WriteLine("$dir='" + dir.replace(/'/g,"''") + "'");
+      f.WriteLine("try {");
+      f.WriteLine("  $rel = Invoke-RestMethod 'https://api.github.com/repos/ValdikSS/GoodbyeDPI/releases/latest'");
+      f.WriteLine("  $asset = $rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1");
+      f.WriteLine("  if (-not $asset) { throw 'ZIP bulunamadi' }");
+      f.WriteLine("  $zip = Join-Path $dir 'goodbyedpi_download.zip'");
+      f.WriteLine("  Invoke-WebRequest $asset.browser_download_url -OutFile $zip");
+      f.WriteLine("  $tmp = Join-Path $dir 'goodbyedpi_tmp'");
+      f.WriteLine("  if (Test-Path $tmp) { Remove-Item $tmp -Recurse -Force }");
+      f.WriteLine("  Expand-Archive $zip -DestinationPath $tmp -Force");
+      f.WriteLine("  $arch = if ([Environment]::Is64BitOperatingSystem) { 'x86_64' } else { 'x86' }");
+      f.WriteLine("  $archDir = Get-ChildItem $tmp -Recurse -Directory | Where-Object { $_.Name -eq $arch } | Select-Object -First 1");
+      f.WriteLine("  if ($archDir) { Copy-Item (Join-Path $archDir.FullName '*') -Destination $dir -Force }");
+      f.WriteLine("  else {");
+      f.WriteLine("    $exe = Get-ChildItem $tmp -Recurse -Filter 'goodbyedpi.exe' | Select-Object -First 1");
+      f.WriteLine("    if ($exe) { Copy-Item (Join-Path $exe.DirectoryName '*') -Destination $dir -Force }");
+      f.WriteLine("    else { throw 'goodbyedpi.exe bulunamadi' }");
+      f.WriteLine("  }");
+      f.WriteLine("  Remove-Item $zip -Force -EA SilentlyContinue");
+      f.WriteLine("  Remove-Item $tmp -Recurse -Force -EA SilentlyContinue");
+      f.WriteLine("  Write-Output 'SUCCESS'");
+      f.WriteLine("} catch { Write-Output ('ERROR:' + $_.Exception.Message) }");
+      f.Close();
+
+      var result = RunCapture("powershell -NoProfile -ExecutionPolicy Bypass -File \"" + ps1 + "\"");
+      try { fso.DeleteFile(ps1); } catch(e){}
+
+      if (result.indexOf("SUCCESS") >= 0 && fso.FileExists(ExePath)){
+        lg.innerHTML = Bi("⏳ Servis kuruluyor...", "⏳ Installing service...");
+        SetServiceMode("-5 --set-ttl 3");
+        $("downloadCard").style.display = "none";
+        Toast(Bi("GoodbyeDPI kuruldu ve başlatıldı!","GoodbyeDPI installed and started!"));
+      } else {
+        var err = result.indexOf("ERROR:") >= 0 ? result.substring(result.indexOf("ERROR:") + 6) : result;
+        lg.innerHTML = '<b style="color:#f87171">' + Bi("İndirme başarısız: ","Download failed: ") + trim(err) + "</b>";
+      }
+    } catch(e){
+      $("downloadLog").innerHTML = '<b style="color:#f87171">' + e.message + "</b>";
+    }
+    Busy(false);
+    RefreshStatus();
+  }, 60);
 }
 </script>
 </body>

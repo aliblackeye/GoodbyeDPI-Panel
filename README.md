@@ -10,8 +10,22 @@
 
 ---
 
+## ⚡ Tek Tıkla Kurulum (En Kolay Yol)
+
+> **GoodbyeDPI'yı hiç indirmedin mi? Sorun değil — her şeyi otomatik halleder.**
+
+1. [**⬇️ Bu repoyu indir**](../../archive/refs/heads/main.zip) (veya sayfanın üstündeki yeşil **Code** → **Download ZIP**)
+2. ZIP'i bir klasöre çıkar
+3. **`setup.cmd`**'ye çift tıkla → UAC'ye **"Evet"** de
+4. **Bitti!** GoodbyeDPI otomatik indirilir, servise kurulur ve başlatılır.
+
+> **Alternatif:** `Start-Panel.cmd`'ye çift tıkla → panel açılır → **"İndir ve Kur"** butonuna bas. Aynı şeyi görsel arayüzden yapar.
+
+---
+
 ## ✨ Özellikler
 
+- ⬇️ **Otomatik indirme** — GoodbyeDPI yoksa tek tıkla GitHub'dan indirir ve kurar. Ayrıca indirmene gerek yok.
 - 🟢 **Servis yönetimi** — Tek tıkla Kur / Kaldır / Başlat / Durdur / Yeniden Başlat. Otomatik başlangıçla kurulur (bilgisayar açılınca sessizce çalışır, CMD penceresi açılmaz).
 - 🎚️ **Açıklamalı mod seçici** — `-1`…`-9` ve `--set-ttl` seçenekleri, her birinin ne işe yaradığı açıklanmış. ⭐ Türkiye için önerilen hazır mod.
 - 🪄 **Otomatik en iyi modu bul** — Açılmayan bir site yaz, panel modları tek tek deneyip o siteyi açan modu otomatik bulup uygular.
@@ -21,10 +35,16 @@
 
 ---
 
-## 📦 Kurulum
+## 📦 Kurulum (Detaylı)
+
+### Yol A: Otomatik (önerilen)
+
+`setup.cmd`'ye çift tıkla — GoodbyeDPI'yı indirir, servisi kurar, paneli açar. Başka bir şey yapmana gerek yok.
+
+### Yol B: Manuel
 
 1. [GoodbyeDPI'nin son sürümünü](https://github.com/ValdikSS/GoodbyeDPI/releases) indir ve bir klasöre çıkar (içinde `goodbyedpi.exe` olmalı).
-2. Bu depodaki **`GoodbyeDPI-Panel.hta`** ve **`Start-Panel.cmd`** dosyalarını **`goodbyedpi.exe` ile aynı klasöre** kopyala.
+2. Bu depodaki dosyaları **`goodbyedpi.exe` ile aynı klasöre** kopyala.
 3. **`Start-Panel.cmd`**'ye çift tıkla → çıkan **UAC penceresine "Evet"** de.
 
 > Panel yönetici yetkisiyle çalışmak zorundadır (servis ve DNS ayarlarını değiştirebilmek için). Bu yüzden açılışta bir kez UAC sorar.
@@ -33,13 +53,14 @@ Klasör şöyle görünmeli:
 
 ```
 GoodbyeDPI\
-├── goodbyedpi.exe
+├── goodbyedpi.exe          ← (otomatik indirilir veya manuel koyarsın)
 ├── WinDivert.dll
 ├── WinDivert64.sys
-├── GoodbyeDPI-Panel.hta   ← arayüz / the panel
-├── Start-Panel.cmd        ← başlatıcı (buna çift tıkla) / launcher (double-click this)
-├── install.cmd            ← (opsiyonel) komut satırından servis kurar / (optional) CLI install
-└── uninstall.cmd          ← (opsiyonel) komut satırından servisi kaldırır / (optional) CLI uninstall
+├── GoodbyeDPI-Panel.hta    ← arayüz / the panel
+├── Start-Panel.cmd         ← başlatıcı (buna çift tıkla) / launcher (double-click this)
+├── setup.cmd               ← ⚡ tek tıkla kurulum / one-click setup
+├── install.cmd             ← (opsiyonel) komut satırından servis kurar / (optional) CLI install
+└── uninstall.cmd           ← (opsiyonel) komut satırından servisi kaldırır / (optional) CLI uninstall
 ```
 
 ---
@@ -110,8 +131,20 @@ A **dead-simple** Windows control panel for [GoodbyeDPI](https://github.com/Vald
 
 > Clean, beginner-friendly UI — every setting explains what it does.
 
+### ⚡ One-Click Setup (Easiest Way)
+
+> **Never downloaded GoodbyeDPI? No problem — everything is handled automatically.**
+
+1. [**⬇️ Download this repo**](../../archive/refs/heads/main.zip) (or click green **Code** → **Download ZIP** at the top)
+2. Extract the ZIP to a folder
+3. Double-click **`setup.cmd`** → click **"Yes"** on UAC
+4. **Done!** GoodbyeDPI is automatically downloaded, installed as a service, and started.
+
+> **Alternative:** Double-click `Start-Panel.cmd` → panel opens → click **"Download & Install"** button. Same thing, with a GUI.
+
 ### ✨ Features
 
+- ⬇️ **Auto-download** — If GoodbyeDPI is missing, downloads and installs it from GitHub with one click. No separate download needed.
 - 🟢 **Service management** — One-click Install / Uninstall / Start / Stop / Restart. Installs with auto-start (runs silently on every boot, no CMD window).
 - 🎚️ **Explained mode picker** — `-1`…`-9` and `--set-ttl`, each with a plain-language description. ⭐ A ready preset recommended for Turkey.
 - 🪄 **Auto-find best mode** — Type a site that won't open; the panel tries each mode and auto-applies the one that works.
@@ -119,10 +152,16 @@ A **dead-simple** Windows control panel for [GoodbyeDPI](https://github.com/Vald
 - 🧪 **Site access test** — Enter an address and see whether DNS and the HTTPS connection work.
 - 🌍 **Bilingual** — Turkish / English (one-button toggle).
 
-### 📦 Installation
+### 📦 Installation (Detailed)
+
+**Option A: Automatic (recommended)**
+
+Double-click `setup.cmd` — it downloads GoodbyeDPI, installs the service, and opens the panel. Nothing else needed.
+
+**Option B: Manual**
 
 1. Download the [latest GoodbyeDPI release](https://github.com/ValdikSS/GoodbyeDPI/releases) and extract it (must contain `goodbyedpi.exe`).
-2. Copy **`GoodbyeDPI-Panel.hta`** and **`Start-Panel.cmd`** from this repo into the **same folder as `goodbyedpi.exe`**.
+2. Copy the files from this repo into the **same folder as `goodbyedpi.exe`**.
 3. Double-click **`Start-Panel.cmd`** → click **"Yes"** on the UAC prompt.
 
 > The panel must run elevated (to change service and DNS settings), so it asks for UAC once at startup.
