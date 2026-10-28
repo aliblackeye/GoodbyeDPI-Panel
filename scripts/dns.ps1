@@ -61,7 +61,8 @@ function Get-DohEntry([string]$Addr) {
 function Set-AdapterDns([int]$Index, [int]$Family, [string[]]$Servers) {
     $fam = if ($Family -eq 6) { 'ipv6' } else { 'ipv4' }
     $nameArg = 'name=' + $Index
-    if (-not $Servers -or $Servers.Count -eq 0) {
+    $Servers = @($Servers | Where-Object { $_ })
+    if ($Servers.Count -eq 0) {
         & netsh interface $fam set dnsservers $nameArg source=dhcp | Out-Null
         return
     }
