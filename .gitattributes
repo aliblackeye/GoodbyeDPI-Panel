@@ -1,0 +1,9 @@
+# cmd.exe LF satir sonlu .cmd dosyalarinda etiket/goto hatalari yapabilir.
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Upstream ikili dosyalari bayt bayt korunur
+*.exe binary
+*.dll binary
+*.sys binary
+*.png binary

@@ -1,14 +1,15 @@
-# GoodbyeDPI'nin kendi dosyalari bu repoda DAGITILMAZ (ValdikSS'e aittir).
-# Kullanicilar bunlari resmi surumden indirir:
-# https://github.com/ValdikSS/GoodbyeDPI/releases
-goodbyedpi.exe
-WinDivert.dll
-WinDivert*.sys
-x86/
-x86_64/
+# GoodbyeDPI ikili dosyalari artik bin/x86_64 ve bin/x86 altinda repoyla gelir
+# (bkz. THIRD_PARTY_NOTICES.md). Kok dizine elle kopyalanmis eski kopyalar
+# repoya girmesin:
+/goodbyedpi.exe
+/WinDivert.dll
+/WinDivert*.sys
+/x86/
+/x86_64/
 
-# Panel gecici ciktilari
+# Panel gecici ciktilari ve yerel ayarlar
 gdpi_panel_out.txt
+panel-settings.ini
 
 # Indirme gecici dosyalari
 goodbyedpi_download.zip
