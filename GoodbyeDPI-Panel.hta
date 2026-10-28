@@ -93,6 +93,22 @@ input[type=text] {
 }
 input[type=text]:focus { outline: none; border-color: #52525b; box-shadow: 0 0 0 3px rgba(250,250,250,.06); }
 
+/* Select + ISP hint */
+select {
+  background: #0c0c0e; border: 1px solid #27272a; border-radius: 8px;
+  color: #fafafa; padding: 7px 10px; font-size: 13px; font-family: inherit; min-width: 220px;
+}
+.hint {
+  background: #0f1012; border: 1px solid #27272a; border-radius: 10px;
+  padding: 12px 14px; margin-top: 12px; font-size: 12.5px; color: #d4d4d8; line-height: 1.6;
+}
+.hint .mname { font-family: Consolas, "Cascadia Mono", monospace; color:#fafafa; background:#18181b; padding:1px 6px; border-radius:5px; border:1px solid #27272a; font-size: 12px; }
+.hint .warnline { color:#fbbf24; display:block; margin-top:6px; }
+.hint .src { color:#71717a; display:block; margin-top:6px; font-size: 11.5px; }
+.opt { display:block; margin: 8px 0 0; color:#d4d4d8; font-size: 13px; }
+.opt input { vertical-align: middle; margin-right: 8px; }
+.opt .sub { display:block; color:#a1a1aa; font-size: 12px; padding-left: 24px; }
+
 /* Mode list */
 .modes label {
   display: block; background: #0c0c0e; border: 1px solid #27272a; border-radius: 10px;
@@ -160,8 +176,8 @@ body.lang-tr .en { display:none; }
   <div class="card download" id="downloadCard" style="display:none">
     <h2>⬇️ <span class="tr">GoodbyeDPI İndir</span><span class="en">Download GoodbyeDPI</span></h2>
     <p class="desc">
-      <span class="tr">GoodbyeDPI dosyaları bu klasörde bulunamadı. Aşağıdaki düğmeye tıkla — otomatik olarak indirilip servis olarak kurulacak. Bilgisayar her açıldığında sessizce çalışacak.</span>
-      <span class="en">GoodbyeDPI files not found in this folder. Click below — it will be downloaded and installed as a service automatically. It will run silently on every boot.</span>
+      <span class="tr">GoodbyeDPI normalde bu paketle gelir (<b>bin_64</b> / <b>bin</b>) ama burada bulunamadı. Aşağıdaki düğme aynı resmi sürümü (0.2.3rc3) GitHub'dan indirir, SHA-256 ile doğrular ve servis olarak kurar.</span>
+      <span class="en">GoodbyeDPI normally ships with this package (<b>bin_64</b> / <b>bin</b>) but it is missing here. The button below downloads the same official release (0.2.3rc3) from GitHub, verifies its SHA-256 and installs it as a service.</span>
     </p>
     <div class="row">
       <button id="btnDownload" class="primary" style="font-size:15px; padding:11px 22px">⬇️ <span class="tr">İndir ve Kur (Tek Tıkla)</span><span class="en">Download & Install (One Click)</span></button>
@@ -179,6 +195,7 @@ body.lang-tr .en { display:none; }
     <div class="statusline">
       <span><span class="k tr">Servis:</span><span class="k en">Service:</span> <span id="statusBadge" class="badge warn">...</span></span>
       <span><span class="k tr">Aktif mod:</span><span class="k en">Active mode:</span> <span id="modeNow" class="mode-now">-</span></span>
+      <span><span class="k tr">GoodbyeDPI:</span><span class="k en">GoodbyeDPI:</span> <span id="exeNow" class="mode-now">-</span></span>
     </div>
     <div class="row">
       <button id="btnInstall" class="primary"><span class="tr">Kur</span><span class="en">Install</span></button>
@@ -194,47 +211,95 @@ body.lang-tr .en { display:none; }
     </p>
   </div>
 
+  <!-- SAGLAYICI ONERISI -->
+  <div class="card">
+    <h2><span class="tr">2) İnternet Sağlayıcın (öneri)</span><span class="en">2) Your ISP (suggestion)</span></h2>
+    <p class="desc">
+      <span class="tr">Sağlayıcını seç; o sağlayıcıda kullanıcıların çalıştığını bildirdiği mod önerilir ve "Otomatik Bul" önce onları dener. Bu <b>topluluk bilgisidir, sağlayıcıda ve hatta değişebilir</b> — kesin sonucu senin hattındaki "Otomatik Bul" verir.</span>
+      <span class="en">Pick your ISP; the mode users report working there is suggested and "Auto-Find" tries it first. This is <b>community knowledge and may differ per ISP and per line</b> — "Auto-Find" on your own line gives the real answer.</span>
+    </p>
+    <div class="row">
+      <select id="ispSel">
+        <option value="other">Bilmiyorum / Diğer — Don't know / Other</option>
+        <option value="tt">Türk Telekom</option>
+        <option value="turknet">TurkNet</option>
+        <option value="superonline">Turkcell Superonline</option>
+        <option value="vodafone">Vodafone Net</option>
+        <option value="kablonet">Türksat Kablonet</option>
+        <option value="millenicom">Millenicom</option>
+      </select>
+      <button id="btnIspUse"><span class="tr">Öneriyi Seç</span><span class="en">Use Suggestion</span></button>
+    </div>
+    <div class="hint" id="ispHint"></div>
+  </div>
+
   <!-- MOD SECICI -->
   <div class="card">
-    <h2><span class="tr">2) Mod Seçimi (ne işe yarar?)</span><span class="en">2) Mode Selection (what it does)</span></h2>
+    <h2><span class="tr">3) Mod Seçimi (ne işe yarar?)</span><span class="en">3) Mode Selection (what it does)</span></h2>
     <p class="desc">
       <span class="tr">Modlar, engellemeyi aşma tekniğini belirler. Her site farklı yöntemle engellenebildiği için tek doğru mod yoktur — bir site açılmıyorsa modu değiştir. Aşağıdaki ⭐ önerilen mod çoğu Türkiye engellemesini kapsar.</span>
       <span class="en">Modes set the bypass technique. Different sites are blocked differently, so there is no single right mode — if a site won't open, change the mode. The ⭐ recommended one below covers most blocks in Turkey.</span>
     </p>
     <div class="modes">
       <label class="rec"><input type="radio" name="mode" value="-5 --set-ttl 3" checked>
-        <span class="mname">-5 --set-ttl 3</span><span class="mrec">⭐ ÖNERİLEN / RECOMMENDED</span>
-        <span class="mdesc tr">Hem bağlantıyı koparan (RST) hem sessizce düşüren DPI'yi birden aşar. Çoğu modern engellemede çalışır. Açılmazsa "set-ttl 4" dene.</span>
-        <span class="mdesc en">Bypasses both RST-injecting and silent-drop DPI at once. Works on most modern blocks. If it fails, try "set-ttl 4".</span></label>
+        <span class="mname">-5 --set-ttl 3</span><span class="mrec">⭐ VARSAYILAN / DEFAULT</span>
+        <span class="mdesc tr">Hem bağlantıyı koparan (RST) hem sessizce düşüren DPI'yi birden aşar (sahte paket TTL=3 + parçalama). Panelin yazarının hattında test edildi. Açılmazsa TTL 4 / 5 dene.</span>
+        <span class="mdesc en">Bypasses both RST-injecting and silent-drop DPI (fake packet TTL=3 + fragmentation). Tested on the author's line. If it fails, try TTL 4 / 5.</span></label>
+      <label><input type="radio" name="mode" value="-5 --set-ttl 5">
+        <span class="mname">-5 --set-ttl 5</span>
+        <span class="mdesc tr">GoodbyeDPI-Turkey projesinin varsayılanı. Türk Telekom / Superonline kullanıcılarında yaygın.</span>
+        <span class="mdesc en">Default of the GoodbyeDPI-Turkey project. Common on Türk Telekom / Superonline.</span></label>
       <label><input type="radio" name="mode" value="-5 --set-ttl 4">
         <span class="mname">-5 --set-ttl 4</span>
-        <span class="mdesc tr">Üstekinin TTL=4 varyantı. Ağ yolun farklıysa bu tutabilir.</span>
-        <span class="mdesc en">Same as above but TTL=4. Works if your network path differs.</span></label>
-      <label><input type="radio" name="mode" value="-1">
-        <span class="mname">-1</span>
-        <span class="mdesc tr">En hafif ve en hızlı. Basit engellemelerde yeterli, bağlantıyı en az yorar.</span>
-        <span class="mdesc en">Lightest and fastest. Enough for simple blocks, least overhead.</span></label>
-      <label><input type="radio" name="mode" value="-2">
-        <span class="mname">-2</span>
-        <span class="mdesc tr">Hafif, farklı parçalama boyutu. -1 işe yaramazsa dene.</span>
-        <span class="mdesc en">Light, different fragment size. Try if -1 doesn't work.</span></label>
-      <label><input type="radio" name="mode" value="-4">
-        <span class="mname">-4</span>
-        <span class="mdesc tr">En basit/pasif mod. Çok az müdahale eder.</span>
-        <span class="mdesc en">Simplest/passive mode. Minimal interference.</span></label>
-      <label><input type="radio" name="mode" value="-5">
-        <span class="mname">-5</span>
-        <span class="mdesc tr">Orta-güçlü. Modern DPI için iyi başlangıç (ama bazı sessiz-drop sitelerde tek başına yetmez).</span>
-        <span class="mdesc en">Medium-strong. Good start for modern DPI (but alone may miss silent-drop sites).</span></label>
+        <span class="mdesc tr">Aynısı, TTL=4. Ağ yolun farklıysa bu tutabilir.</span>
+        <span class="mdesc en">Same, TTL=4. Works if your network path differs.</span></label>
       <label><input type="radio" name="mode" value="-6">
         <span class="mname">-6</span>
-        <span class="mdesc tr">-5'in farklı varyantı (wrong-seq tekniği). Bazı ISP'lerde işe yarar.</span>
-        <span class="mdesc en">Variant of -5 (wrong-seq technique). Works on some ISPs.</span></label>
+        <span class="mdesc tr">Sahte paketi geçmiş sıra numarasıyla yollar (wrong-seq). Vodafone ve Kablonet'te çalıştığı bildiriliyor; bazı hatlarda yavaşlatabilir.</span>
+        <span class="mdesc en">Sends the fake packet with an old sequence number (wrong-seq). Reported to work on Vodafone and Kablonet; may slow some lines.</span></label>
+      <label><input type="radio" name="mode" value="-5">
+        <span class="mname">-5</span>
+        <span class="mdesc tr">TTL'i otomatik seçer (auto-ttl). Modern DPI için iyi başlangıç ama bazı sessiz-drop hatlarında tek başına yetmez.</span>
+        <span class="mdesc en">Picks the TTL automatically (auto-ttl). Good start for modern DPI but may not be enough on silent-drop lines.</span></label>
       <label><input type="radio" name="mode" value="-9">
         <span class="mname">-9</span>
-        <span class="mdesc tr">En agresif/kombine mod. Zor durumlar için; bazı siteleri yavaşlatabilir.</span>
-        <span class="mdesc en">Most aggressive/combined. For hard cases; may slow some sites.</span></label>
+        <span class="mdesc tr">GoodbyeDPI'nin kendi varsayılanı: wrong-seq + wrong-chksum + QUIC engelleme. Sanal makinede ya da bazı modemlerde wrong-chksum çalışmayabilir.</span>
+        <span class="mdesc en">GoodbyeDPI's own default: wrong-seq + wrong-chksum + block QUIC. wrong-chksum may not work in a VM or behind some routers.</span></label>
+      <label><input type="radio" name="mode" value="--set-ttl 3">
+        <span class="mname">--set-ttl 3</span>
+        <span class="mdesc tr">Yalnız sahte paket (parçalama yok). GoodbyeDPI-Turkey'in Superonline alternatiflerinden biri.</span>
+        <span class="mdesc en">Fake packet only (no fragmentation). One of GoodbyeDPI-Turkey's Superonline alternatives.</span></label>
+      <label><input type="radio" name="mode" value="-7">
+        <span class="mname">-7</span>
+        <span class="mdesc tr">-6 gibi ama yanlış sağlama toplamıyla (wrong-chksum).</span>
+        <span class="mdesc en">Like -6 but with a wrong checksum (wrong-chksum).</span></label>
+      <label><input type="radio" name="mode" value="-8">
+        <span class="mname">-8</span>
+        <span class="mdesc tr">wrong-seq + wrong-chksum birlikte (iki farklı sahte paket).</span>
+        <span class="mdesc en">wrong-seq + wrong-chksum together (two different fake packets).</span></label>
+      <label><input type="radio" name="mode" value="-2">
+        <span class="mname">-2</span>
+        <span class="mdesc tr">Eski (legacy) hafif mod. Türkiye'deki yeni DPI'de genelde yetmez.</span>
+        <span class="mdesc en">Old (legacy) light mode. Usually not enough for current DPI in Turkey.</span></label>
+      <label><input type="radio" name="mode" value="-1">
+        <span class="mname">-1</span>
+        <span class="mdesc tr">Eski en uyumlu mod (pencere boyutuyla parçalama, yavaştır).</span>
+        <span class="mdesc en">Old most-compatible mode (window-size fragmentation, slow).</span></label>
+      <label><input type="radio" name="mode" value="-4">
+        <span class="mname">-4</span>
+        <span class="mdesc tr">Eski en hızlı mod; çok az müdahale eder.</span>
+        <span class="mdesc en">Old fastest mode; minimal interference.</span></label>
     </div>
+    <label class="opt"><input type="checkbox" id="chkQuic"><span class="tr">QUIC/HTTP3'ü engelle (<span class="mname">-q</span>)</span><span class="en">Block QUIC/HTTP3 (<span class="mname">-q</span>)</span>
+      <span class="sub tr">GoodbyeDPI QUIC trafiğini işleyemez; bunu engelleyince tarayıcı/uygulama TCP'ye düşer ve bypass uygulanır. -9 bunu zaten içerir.</span>
+      <span class="sub en">GoodbyeDPI cannot process QUIC; blocking it makes browsers/apps fall back to TCP where the bypass works. -9 already includes it.</span></label>
+    <label class="opt"><input type="checkbox" id="chkDnsRedir"><span class="tr">GoodbyeDPI DNS yönlendirme (Windows 10 / DoH yoksa)</span><span class="en">GoodbyeDPI DNS redirection (Windows 10 / no DoH)</span>
+      <span class="sub tr">UDP DNS sorgularını Yandex DNS 77.88.8.8:1253'e (standart dışı port) yönlendirir — GoodbyeDPI'nin kendi önerdiği yöntem. Uyarı: şifresiz DNS'tir; bazı hatlarda Discord sorguları yine düşürülüyor. Windows 11'de bunun yerine DoH'u kullan. "Otomatik Bul" senin hattında işe yarayıp yaramadığını gösterir.</span>
+      <span class="sub en">Redirects UDP DNS queries to Yandex DNS 77.88.8.8:1253 (non-standard port) — GoodbyeDPI's own suggested method. Warning: it is unencrypted DNS; on some lines Discord queries are still dropped. On Windows 11 use DoH instead. "Auto-Find" shows whether it works on your line.</span></label>
+    <p class="note" style="margin-top:10px">
+      <span class="tr">Blacklist varken <span class="mname">--allow-no-sni</span> da eklenir: Chromium/Electron (Discord uygulaması dahil) post-quantum ClientHello'yu 2 TCP parçasına bölüyor; SNI ilk parçada değilse GoodbyeDPI listeyi eşleyemiyor (upstream issue #330). Bu bayrak o bağlantılara da bypass uygular.</span>
+      <span class="en">With a blacklist, <span class="mname">--allow-no-sni</span> is added too: Chromium/Electron (incl. the Discord app) splits its post-quantum ClientHello into 2 TCP segments; if the SNI is not in the first one GoodbyeDPI cannot match the list (upstream issue #330). This flag applies the bypass to those connections as well.</span>
+    </p>
     <div class="row" style="margin-top:6px">
       <button id="btnApplyMode" class="primary"><span class="tr">Seçili Modu Uygula</span><span class="en">Apply Selected Mode</span></button>
     </div>
@@ -242,13 +307,13 @@ body.lang-tr .en { display:none; }
 
   <!-- OTOMATIK MOD BULUCU -->
   <div class="card">
-    <h2><span class="tr">3) 🪄 Otomatik En İyi Modu Bul</span><span class="en">3) 🪄 Auto-Find Best Mode</span></h2>
+    <h2><span class="tr">4) 🪄 Otomatik En İyi Modu Bul</span><span class="en">4) 🪄 Auto-Find Best Mode</span></h2>
     <p class="desc">
-      <span class="tr">Açılmayan bir site adresi yaz, panel modları tek tek deneyip o siteyi açan modu otomatik bulur ve uygular. Genel internetin bozulmadığını da kontrol eder. Bu işlem ~30-60 sn sürer.</span>
-      <span class="en">Type a site that won't open; the panel tries each mode, finds the one that opens it, and applies it. It also checks that general internet still works. Takes ~30-60s.</span>
+      <span class="tr">Panel modları sırayla dener (önce seçili sağlayıcının önerileri) ve şunların hepsi açılınca durup o modu kurar: Discord (discord.com API, gateway.discord.gg, cdn.discordapp.com, updates.discord.com güncelleyicisi), yazdığın site ve genel internet (google.com). DNS'in çözüp çözmediğini de gösterir. ~1-2 dk sürebilir.</span>
+      <span class="en">The panel tries the modes in order (the selected ISP's suggestions first) and stops at the first one where all of these work, then installs it: Discord (discord.com API, gateway.discord.gg, cdn.discordapp.com, the updates.discord.com updater), the site you typed and general internet (google.com). It also shows whether DNS resolves. May take ~1-2 min.</span>
     </p>
     <div class="row">
-      <input type="text" id="autoInput" value="example.com">
+      <input type="text" id="autoInput" value="discord.com">
       <button id="btnAuto" class="go"><span class="tr">Otomatik Bul &amp; Uygula</span><span class="en">Auto-Find &amp; Apply</span></button>
     </div>
     <pre class="log" id="autoLog" style="display:none"></pre>
@@ -256,20 +321,21 @@ body.lang-tr .en { display:none; }
 
   <!-- DNS / DoH -->
   <div class="card">
-    <h2><span class="tr">4) DNS Şifreleme (DoH)</span><span class="en">4) Encrypted DNS (DoH)</span></h2>
+    <h2><span class="tr">5) DNS Şifreleme (DoH)</span><span class="en">5) Encrypted DNS (DoH)</span></h2>
     <p class="desc">
-      <span class="tr">Bazı siteler DNS katmanında engellenir (adres IP'ye çevrilemez). DNS-over-HTTPS, DNS sorgularını şifreler (443 üzerinden) ve bu engeli aşar. Google DNS (8.8.8.8) kullanılır.</span>
-      <span class="en">Some sites are blocked at the DNS layer (the name can't resolve to an IP). DNS-over-HTTPS encrypts DNS queries (over 443) and bypasses this. Uses Google DNS (8.8.8.8).</span>
+      <span class="tr">Discord Türkiye'de DNS'te de engelli: adres yanlış IP'ye çevrilir ya da sorgu düşürülür. Tarayıcının kendi "Güvenli DNS"i olsa bile <b>Discord masaüstü uygulaması Windows'un DNS'ini kullanır</b>. Bu anahtar Windows'un DNS-over-HTTPS'ini açar: bağlı ağ kartlarına Google (8.8.8.8) + Cloudflare (1.1.1.1) DNS'i yazar, IPv4/IPv6 için şifreli sorguyu zorunlu yapar. Açmadan önce eski ayarların yedeklenir; kapatınca aynen geri yüklenir.</span>
+      <span class="en">Discord is DNS-blocked in Turkey too: the name resolves to a wrong IP or the query is dropped. Even if your browser has its own "Secure DNS", <b>the Discord desktop app uses Windows DNS</b>. This switch turns on Windows DNS-over-HTTPS: it sets Google (8.8.8.8) + Cloudflare (1.1.1.1) DNS on connected adapters and forces encrypted queries for IPv4/IPv6. Your old settings are backed up first and restored exactly when you turn it off.</span>
     </p>
     <div class="switch">
-      <label class="switch"><input type="checkbox" id="chkDoH"> <span><span class="tr">DoH'u Aç</span><span class="en">Enable DoH</span></span></label>
+      <label class="switch"><input type="checkbox" id="chkDoH"> <span><span class="tr">DoH'u Aç (kapatınca eski DNS'e döner)</span><span class="en">Enable DoH (off = restore old DNS)</span></span></label>
       <span><span class="k tr">Durum:</span><span class="k en">Status:</span> <span id="dohBadge" class="badge warn">...</span></span>
     </div>
+    <p class="note" id="dohNote" style="margin-top:10px; display:none"></p>
   </div>
 
   <!-- SITE TESTI -->
   <div class="card">
-    <h2><span class="tr">5) Site Erişim Testi</span><span class="en">5) Site Access Test</span></h2>
+    <h2><span class="tr">6) Site Erişim Testi</span><span class="en">6) Site Access Test</span></h2>
     <p class="desc">
       <span class="tr">Bir adres gir; DNS çözümleme ve HTTPS bağlantısı çalışıyor mu kontrol eder.</span>
       <span class="en">Enter an address; checks whether DNS resolution and the HTTPS connection work.</span>
@@ -283,7 +349,7 @@ body.lang-tr .en { display:none; }
 
   <!-- BLACKLIST -->
   <div class="card">
-    <h2><span class="tr">6) Bypass Uygulanacak Siteler</span><span class="en">6) Sites to Bypass</span></h2>
+    <h2><span class="tr">7) Bypass Uygulanacak Siteler</span><span class="en">7) Sites to Bypass</span></h2>
     <p class="desc">
       <span class="tr">GoodbyeDPI <b>sadece</b> aşağıdaki sitelere bypass uygular, listede olmayan siteler <b>hiç etkilenmez</b>. Açılmayan bir site olursa buraya ekle. Düzenledikten sonra "Kaydet"e bas, ardından yukarıdan "Seçili Modu Uygula" ile servisi güncelle.</span>
       <span class="en">GoodbyeDPI applies bypass <b>only</b> to the sites below; sites not listed are <b>not affected</b>. If a site won't open, add it here. After editing, click "Save", then "Apply Selected Mode" above to update the service.</span>
@@ -302,15 +368,15 @@ body.lang-tr .en { display:none; }
       <span class="tr"><b>DPI (Derin Paket İncelemesi):</b> İnternet sağlayıcın trafiğine bakıp hangi siteye gittiğini anlar ve engeller. GoodbyeDPI, bu incelemeyi şaşırtacak şekilde paketleri parçalar/değiştirir.<br><br>
       <b>SNI engelleme:</b> HTTPS bağlanırken hangi siteye gittiğin (örn. example.com) açık yazılır. DPI bunu görüp ya bağlantıyı koparır (RST) ya da sessizce düşürür. GoodbyeDPI bu bilgiyi gizler.<br><br>
       <b>DNS engelleme:</b> Site adının IP adresine çevrilmesi bozulur. DoH (DNS-over-HTTPS) sorguları şifreleyerek bunu aşar.<br><br>
-      <b>Özet:</b> Bir site açılmıyorsa: önce DoH'u aç, sonra "Otomatik Bul" ile doğru modu buldur. Çoğu durumda <span class="mname">-5 --set-ttl 3</span> + DoH yeterli.</span>
+      <b>Özet:</b> Bir site ya da Discord açılmıyorsa: önce DoH'u aç, sonra "Otomatik Bul" ile hattında çalışan modu buldur. Hiçbir mod her sağlayıcıda garanti değildir.</span>
       <span class="en"><b>DPI (Deep Packet Inspection):</b> Your ISP inspects your traffic to detect and block which site you visit. GoodbyeDPI fragments/alters packets to confuse this inspection.<br><br>
       <b>SNI blocking:</b> When connecting via HTTPS, the target site name (e.g. example.com) is sent in clear text. DPI sees it and either resets (RST) or silently drops the connection. GoodbyeDPI hides this.<br><br>
       <b>DNS blocking:</b> Resolving a site name to its IP is sabotaged. DoH (DNS-over-HTTPS) encrypts queries to bypass it.<br><br>
-      <b>In short:</b> If a site won't open: enable DoH first, then use "Auto-Find" to detect the right mode. Usually <span class="mname">-5 --set-ttl 3</span> + DoH is enough.</span>
+      <b>In short:</b> If a site or Discord won't open: enable DoH first, then use "Auto-Find" to detect the mode that works on your line. No mode is guaranteed on every ISP.</span>
     </p>
     <hr class="sep">
-    <p class="note tr">GoodbyeDPI bir DPI atlatma aracıdır (github.com/ValdikSS/GoodbyeDPI). Bu panel yalnızca servisi ve ayarları yönetir.</p>
-    <p class="note en">GoodbyeDPI is a DPI circumvention tool (github.com/ValdikSS/GoodbyeDPI). This panel only manages the service and settings.</p>
+    <p class="note tr">GoodbyeDPI bir DPI atlatma aracıdır (github.com/ValdikSS/GoodbyeDPI, Apache-2.0). Bu pakette değiştirilmemiş 0.2.3rc3 ikili dosyaları ve WinDivert (LGPLv3 / GPLv2) gelir — bkz. THIRD_PARTY_NOTICES.md. Panel servisi ve ayarları yönetir.</p>
+    <p class="note en">GoodbyeDPI is a DPI circumvention tool (github.com/ValdikSS/GoodbyeDPI, Apache-2.0). This package ships the unmodified 0.2.3rc3 binaries and WinDivert (LGPLv3 / GPLv2) — see THIRD_PARTY_NOTICES.md. The panel manages the service and settings.</p>
   </div>
 
 </div>
@@ -319,8 +385,51 @@ body.lang-tr .en { display:none; }
 <div id="overlay"><div><span class="spin">⏳ </span><span class="tr">Lütfen bekleyin...</span><span class="en">Please wait...</span></div></div>
 
 <script language="JScript">
-var wsh, fso, sh, ExePath, SVC = "GoodbyeDPI";
-var gModes, gIdx, gHost, gWinner;
+var wsh, fso, sh, ExePath = "", Arch = "", SVC = "GoodbyeDPI";
+var gModes, gIdx, gHost, gWinner, gDnsFails;
+var gDohSupported = true;
+var Settings = { isp: "other", quic: "0", dnsredir: "0" };
+
+// GoodbyeDPI DNS redirection target: upstream README / service scripts example
+// (Yandex DNS on a non-standard port so the ISP's port-53 hijack does not see it).
+var DNS_REDIR = "--dns-addr 77.88.8.8 --dns-port 1253 --dnsv6-addr 2a02:6b8::feed:0ff --dnsv6-port 1253";
+
+// Auto-find order (GoodbyeDPI 0.2.3rc3 modes). Evidence first, legacy last.
+var MODE_ORDER = ["-5 --set-ttl 5", "-5 --set-ttl 3", "-5 --set-ttl 4", "-6", "-5", "-9",
+                  "--set-ttl 3", "-7", "-8", "-2", "-1", "-4"];
+
+// Community reports per ISP. NOT guaranteed: lines differ, ISPs change their DPI.
+var ISPS = {
+  other: { modes: [],
+    tr: "Sağlayıcı seçilmedi. Önce DoH'u aç, sonra \"Otomatik Bul\".",
+    en: "No ISP selected. Enable DoH first, then run \"Auto-Find\".", src: "" },
+  tt: { modes: ["-5 --set-ttl 5", "-5 --set-ttl 3", "-5 --set-ttl 4"],
+    tr: "DoH + <span class=\"mname\">-5 --set-ttl 5</span>. GoodbyeDPI-Turkey'in varsayılanı; projenin geliştiricisi Türk Telekom'da bununla Discord'a girebildiğini yazıyor. Tutmazsa TTL 3 / 4.",
+    en: "DoH + <span class=\"mname\">-5 --set-ttl 5</span>. GoodbyeDPI-Turkey's default; its developer reports Discord works with it on Türk Telekom. Otherwise TTL 3 / 4.",
+    src: "github.com/cagritaskn/GoodbyeDPI-Turkey (turkey_dnsredir.cmd; issue #28, 01.2025)" },
+  turknet: { modes: ["-5 --set-ttl 5", "-5 --set-ttl 3", "-6"],
+    tr: "<b>Önce DoH.</b> TurkNet'te Discord'un çoğunlukla DNS'te engellendiği, DNS'i değiştirmenin (1.1.1.1 / 8.8.8.8) çoğu kullanıcıda yettiği bildiriliyor. Sonra <span class=\"mname\">-5 --set-ttl 5</span>; TurkNet'e özel mod kanıtı az, \"Otomatik Bul\"u kullan.",
+    en: "<b>DoH first.</b> On TurkNet Discord is reported to be mostly DNS-blocked and changing DNS (1.1.1.1 / 8.8.8.8) is enough for many users. Then <span class=\"mname\">-5 --set-ttl 5</span>; little TurkNet-specific mode evidence, use \"Auto-Find\".",
+    src: "Technopat / Techolay kullanıcı bildirimleri (2025-2026)" },
+  superonline: { modes: ["-5 --set-ttl 5", "--set-ttl 3", "-5", "-9"],
+    tr: "<span class=\"mname\">-5 --set-ttl 5</span>; olmazsa GoodbyeDPI-Turkey'in Superonline alternatifleri: <span class=\"mname\">--set-ttl 3</span>, <span class=\"mname\">-5</span>, <span class=\"mname\">-9</span> (kullanıcılar 2./3./4. alternatifin tuttuğunu yazıyor).",
+    en: "<span class=\"mname\">-5 --set-ttl 5</span>; otherwise GoodbyeDPI-Turkey's Superonline alternatives: <span class=\"mname\">--set-ttl 3</span>, <span class=\"mname\">-5</span>, <span class=\"mname\">-9</span> (users report alternatives 2/3/4 working).",
+    src: "GoodbyeDPI-Turkey turkey_dnsredir_alternative*_superonline.cmd; Techolay / Technopat (2025)" },
+  vodafone: { modes: ["-6", "-5 --set-ttl 5", "-9"],
+    tr: "<span class=\"mname\">-6</span> (wrong-seq) ile Discord'un açıldığı bildiriliyor.",
+    en: "Discord is reported to open with <span class=\"mname\">-6</span> (wrong-seq).",
+    warnTr: "Eylül 2026'da bazı Vodafone hatlarında GoodbyeDPI'nin hiç tutmadığı da bildirildi.",
+    warnEn: "In September 2026 some Vodafone lines reported GoodbyeDPI not working at all.",
+    src: "Technopat / Techolay kullanıcı bildirimleri (2025-2026); GoodbyeDPI-Turkey issue #164 (09.2026)" },
+  kablonet: { modes: ["-6", "-5", "-5 --set-ttl 5"],
+    tr: "<span class=\"mname\">-6</span>: bir kullanıcı <span class=\"mname\">-5</span>'in durduğunu, <span class=\"mname\">-6</span>'nın açtığını (ama takılma yapabildiğini) bildirdi.",
+    en: "<span class=\"mname\">-6</span>: a user reported <span class=\"mname\">-5</span> stopped working and <span class=\"mname\">-6</span> works (with some stutter).",
+    src: "GoodbyeDPI-Turkey issue #59 (03.2025)" },
+  millenicom: { modes: ["-5 --set-ttl 5", "-5 --set-ttl 3", "-6"],
+    tr: "Millenicom'a özel güvenilir bir kaynak bulunamadı. DoH'u aç ve \"Otomatik Bul\"u kullan.",
+    en: "No reliable Millenicom-specific source found. Enable DoH and use \"Auto-Find\".",
+    src: "Techolay 65274 (2024, çözümsüz konu)" }
+};
 
 function $(id){ return document.getElementById(id); }
 function trim(s){ return (s||"").replace(/^\s+|\s+$/g, ""); }
@@ -334,7 +443,6 @@ window.onload = function(){
     alert("ActiveX olusturulamadi / cannot create ActiveX: " + e.message);
     return;
   }
-  ExePath = HtaDir() + "goodbyedpi.exe";
 
   // Yonetici degilse kendini yukselt (mshta.exe'yi yukseltip .hta'yi arguman ver)
   if (!IsElevated()){
@@ -343,10 +451,14 @@ window.onload = function(){
     return;
   }
 
+  ResolveExe();
+  LoadSettings();
   WireEvents();
   CheckExe();
   RenderBlacklist();
+  RenderIsp();
   RefreshStatus();
+  SelectModeRadio(BaseMode(CurrentMode()));
 };
 
 function HtaPath(){
@@ -358,10 +470,31 @@ function HtaDir(){
   var p = HtaPath();
   return p.substring(0, p.lastIndexOf("\\") + 1);
 }
+function ScriptPath(name){ return HtaDir() + "scripts\\" + name; }
 
 function IsElevated(){
   var o = RunCapture("whoami /groups");
   return o.indexOf("S-1-16-12288") >= 0;  // High Mandatory Level
+}
+
+// ---------- exe / mimari ----------
+function DetectArch(){
+  var a = wsh.ExpandEnvironmentStrings("%PROCESSOR_ARCHITECTURE%").toUpperCase();
+  var w = wsh.ExpandEnvironmentStrings("%PROCESSOR_ARCHITEW6432%").toUpperCase();
+  if (w.indexOf("%") < 0 && w !== "") a = w;   // 32-bit host on 64-bit Windows
+  if (a == "AMD64") return "x86_64";
+  if (a == "X86") return "x86";
+  if (a == "ARM64") return "arm64";
+  return "";
+}
+
+function ResolveExe(){
+  Arch = DetectArch();
+  var bundled = HtaDir() + "bin\\" + (Arch || "x86_64") + "\\goodbyedpi.exe";
+  var legacy = HtaDir() + "goodbyedpi.exe";
+  if (Arch !== "arm64" && fso.FileExists(bundled)) ExePath = bundled;
+  else if (Arch !== "arm64" && fso.FileExists(legacy)) ExePath = legacy;
+  else ExePath = bundled;   // download target
 }
 
 function WireEvents(){
@@ -378,6 +511,10 @@ function WireEvents(){
   $("btnTest").onclick      = DoTest;
   if ($("btnDownload")) $("btnDownload").onclick = DoDownload;
   $("btnBlSave").onclick = SaveBlacklist;
+  $("ispSel").onchange = function(){ Settings.isp = $("ispSel").value; SaveSettings(); RenderIsp(); };
+  $("btnIspUse").onclick = UseIspSuggestion;
+  $("chkQuic").onclick = function(){ Settings.quic = $("chkQuic").checked ? "1" : "0"; SaveSettings(); Toast(Bi("Kaydedildi; uygulamak için 'Seçili Modu Uygula'.","Saved; click 'Apply Selected Mode' to apply.")); };
+  $("chkDnsRedir").onclick = function(){ Settings.dnsredir = $("chkDnsRedir").checked ? "1" : "0"; SaveSettings(); Toast(Bi("Kaydedildi; uygulamak için 'Seçili Modu Uygula'.","Saved; click 'Apply Selected Mode' to apply.")); };
 }
 
 // ---------- yardimcilar ----------
@@ -395,16 +532,29 @@ function RunCapture(cmdline){
   return txt;
 }
 
+function RunPs(script, args){
+  return RunCapture('powershell -NoProfile -ExecutionPolicy Bypass -File "' + ScriptPath(script) + '"' + (args ? " " + args : ""));
+}
+
 function Pause(sec){ try { wsh.Run('cmd /c ping -n ' + (sec+1) + ' 127.0.0.1', 0, true); } catch(e){} }
 
 function Bi(t, e){ return '<span class="tr">' + t + '</span><span class="en">' + e + '</span>'; }
 
-function BinArg(mode){
+function Esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// Full GoodbyeDPI argument list for a mode. q = quote used around paths:
+// '\\"' inside an sc binPath, '"' for a direct run.
+function FullArgs(mode, q){
+  var a = mode;
+  if (Settings.quic == "1" && (" " + mode + " ").indexOf(" -q ") < 0 && mode != "-9") a += " -q";
+  if (Settings.dnsredir == "1") a += " " + DNS_REDIR;
   var bl = HtaDir() + "blacklist.txt";
-  var arg = '"\\"' + ExePath + '\\" ' + mode;
-  if (fso.FileExists(bl)) arg += ' --blacklist \\"' + bl + '\\"';
-  arg += '"';
-  return arg;
+  if (fso.FileExists(bl)) a += " --blacklist " + q + bl + q + " --allow-no-sni";
+  return a;
+}
+
+function BinArg(mode){
+  return '"\\"' + ExePath + '\\" ' + FullArgs(mode, '\\"') + '"';
 }
 
 function Busy(b){ $("overlay").style.display = b ? "block" : "none"; }
@@ -428,6 +578,68 @@ function SelectedMode(){
   return "-5 --set-ttl 3";
 }
 
+function SelectModeRadio(m){
+  if (!m) return false;
+  var els = document.getElementsByName("mode"), hit = false;
+  for (var i = 0; i < els.length; i++){ if (els[i].value == m){ els[i].checked = true; hit = true; } }
+  return hit;
+}
+
+// ---------- ayarlar (panel-settings.ini, panel klasorunde) ----------
+function SettingsPath(){ return HtaDir() + "panel-settings.ini"; }
+function LoadSettings(){
+  try {
+    if (fso.FileExists(SettingsPath())){
+      var f = fso.OpenTextFile(SettingsPath(), 1, false);
+      while (!f.AtEndOfStream){
+        var line = trim(f.ReadLine()), i = line.indexOf("=");
+        if (i > 0){
+          var k = trim(line.substring(0, i)), v = trim(line.substring(i + 1));
+          if (k == "isp" && ISPS[v]) Settings.isp = v;
+          if (k == "quic") Settings.quic = (v == "1") ? "1" : "0";
+          if (k == "dnsredir") Settings.dnsredir = (v == "1") ? "1" : "0";
+        }
+      }
+      f.Close();
+    }
+  } catch(e){}
+  $("ispSel").value = Settings.isp;
+  $("chkQuic").checked = (Settings.quic == "1");
+  $("chkDnsRedir").checked = (Settings.dnsredir == "1");
+}
+function SaveSettings(){
+  try {
+    var f = fso.CreateTextFile(SettingsPath(), true);
+    f.WriteLine("isp=" + Settings.isp);
+    f.WriteLine("quic=" + Settings.quic);
+    f.WriteLine("dnsredir=" + Settings.dnsredir);
+    f.Close();
+  } catch(e){}
+}
+
+// ---------- saglayici onerisi ----------
+function RenderIsp(){
+  var d = ISPS[Settings.isp] || ISPS.other;
+  var h = "";
+  if (d.modes.length){
+    h += '<b>' + Bi("Önerilen: ", "Suggested: ") + '</b><span class="mname">' + d.modes[0] + '</span> &nbsp;';
+    h += Bi("(Otomatik Bul önce bunları dener: ", "(Auto-Find tries these first: ") + d.modes.join(", ") + ")<br>";
+  }
+  h += Bi(d.tr, d.en);
+  if (d.warnTr) h += '<span class="warnline">' + Bi("⚠ " + d.warnTr, "⚠ " + d.warnEn) + '</span>';
+  h += '<span class="warnline">' + Bi("Topluluk bilgisi, sağlayıcıda ve hatta değişebilir. Kesin sonuç: Otomatik Bul.",
+                                      "Community knowledge; may change per ISP and line. Real answer: Auto-Find.") + '</span>';
+  if (d.src) h += '<span class="src">' + Bi("Kaynak: ", "Source: ") + Esc(d.src) + '</span>';
+  $("ispHint").innerHTML = h;
+}
+
+function UseIspSuggestion(){
+  var d = ISPS[Settings.isp] || ISPS.other;
+  if (!d.modes.length){ Toast(Bi("Önce sağlayıcını seç ya da Otomatik Bul'u kullan.","Pick your ISP or use Auto-Find.")); return; }
+  SelectModeRadio(d.modes[0]);
+  Toast(Bi("Seçildi: ","Selected: ") + d.modes[0] + Bi(" — uygulamak için 'Seçili Modu Uygula'."," — click 'Apply Selected Mode'."));
+}
+
 function ServiceInstalled(){
   var q = RunCapture("sc query " + SVC);
   return !(q.indexOf("1060") >= 0 || trim(q).length === 0);
@@ -441,6 +653,15 @@ function CurrentMode(){
   var nl = p.indexOf("\n");
   if (nl >= 0) p = p.substring(0, nl);
   return trim(p);
+}
+
+// Mode part only (drop the flags the panel adds itself).
+function BaseMode(full){
+  var m = " " + full + " ";
+  m = m.replace(/ --blacklist "[^"]*"/g, " ").replace(/ --blacklist \S+/g, " ");
+  m = m.replace(/ --allow-no-sni/g, " ").replace(/ --dns(v6)?-(addr|port) \S+/g, " ");
+  m = m.replace(/ -q(?= )/g, " ");
+  return trim(m.replace(/\s+/g, " "));
 }
 
 // ---------- servis islemleri ----------
@@ -459,8 +680,14 @@ function SetServiceMode(mode){
 
 function defer(fn){ Busy(true); window.setTimeout(function(){ try { fn(); } catch(e){ alert(e.message); } Busy(false); RefreshStatus(); }, 60); }
 
-function DoInstall(){ defer(function(){ SetServiceMode(SelectedMode()); Toast(Bi("Servis kuruldu ve başlatıldı.","Service installed and started.")); }); }
-function DoApply(){ defer(function(){ SetServiceMode(SelectedMode()); Toast(Bi("Mod uygulandı: ","Mode applied: ") + SelectedMode()); }); }
+function NeedExe(){
+  if (fso.FileExists(ExePath)) return true;
+  Toast(Bi("goodbyedpi.exe yok — önce 'İndir ve Kur'.","goodbyedpi.exe missing — use 'Download & Install' first."));
+  return false;
+}
+
+function DoInstall(){ if (!NeedExe()) return; defer(function(){ SetServiceMode(SelectedMode()); Toast(Bi("Servis kuruldu ve başlatıldı.","Service installed and started.")); }); }
+function DoApply(){ if (!NeedExe()) return; defer(function(){ SetServiceMode(SelectedMode()); Toast(Bi("Mod uygulandı: ","Mode applied: ") + SelectedMode()); }); }
 function DoStart(){ defer(function(){ RunCapture("sc start " + SVC); Toast(Bi("Başlatıldı.","Started.")); }); }
 function DoStop(){ defer(function(){ RunCapture("sc stop " + SVC); Toast(Bi("Durduruldu.","Stopped.")); }); }
 function DoRestart(){ defer(function(){ RunCapture("sc stop " + SVC); Pause(2); RunCapture("sc start " + SVC); Toast(Bi("Yeniden başlatıldı.","Restarted.")); }); }
@@ -472,7 +699,9 @@ function DoUninstall(){
     RunCapture("sc delete " + SVC);
     RunCapture("sc stop WinDivert");
     RunCapture("sc delete WinDivert");
-    Toast(Bi("Servis kaldırıldı.","Service removed."));
+    RunCapture("sc stop WinDivert14");
+    RunCapture("sc delete WinDivert14");
+    Toast(Bi("Servis kaldırıldı. DNS'i geri almak için DoH'u kapat.","Service removed. Turn DoH off to restore DNS."));
   });
 }
 
@@ -492,43 +721,61 @@ function RefreshStatus(){
       b.className = "badge warn"; b.innerHTML = Bi("🟡 Geçiş","🟡 Pending");
     }
     var m = CurrentMode();
-    $("modeNow").innerHTML = (m === "") ? "(parametresiz / no params)" : m;
+    $("modeNow").innerText = (m === "") ? "(parametresiz / no params)" : m.replace(/--blacklist "[^"]*"/, "--blacklist …");
   }
-  // DoH durumu
-  var d = trim(RunCapture("powershell -NoProfile -Command \"$x=Get-DnsClientDohServerAddress -EA SilentlyContinue | ? {$_.ServerAddress -eq '8.8.8.8'}; if($x -and $x.AutoUpgrade){'ON'}else{'OFF'}\""));
-  var db = $("dohBadge");
-  if (d.indexOf("ON") >= 0){
-    $("chkDoH").checked = true;
+  if (Arch == "arm64") $("exeNow").innerText = "ARM64: desteklenmiyor / not supported";
+  else if (!fso.FileExists(ExePath)) $("exeNow").innerText = "yok / missing";
+  else if (ExePath.indexOf("\\bin\\") >= 0) $("exeNow").innerText = "0.2.3rc3 (bin\\" + Arch + ")";
+  else $("exeNow").innerText = ExePath;
+  RefreshDoH();
+}
+
+function RefreshDoH(){
+  var d = trim(RunPs("dns.ps1", "-Action status"));
+  var db = $("dohBadge"), chk = $("chkDoH"), note = $("dohNote");
+  gDohSupported = (d.indexOf("UNSUPPORTED") < 0);
+  if (!gDohSupported){
+    chk.checked = false; chk.disabled = true;
+    db.className = "badge warn"; db.innerHTML = Bi("Bu Windows'ta yok","Not on this Windows");
+    note.style.display = "block";
+    note.innerHTML = Bi("Windows'un yerleşik DoH'u Windows 11'de var; bu sürümde yok. Discord uygulaması için yukarıdaki <b>GoodbyeDPI DNS yönlendirme</b> seçeneğini dene ya da Windows 11'e geç.",
+                        "Windows' built-in DoH exists on Windows 11, not on this version. For the Discord app try the <b>GoodbyeDPI DNS redirection</b> option above, or move to Windows 11.");
+    return;
+  }
+  chk.disabled = false;
+  if (d.indexOf("ON") === 0){
+    chk.checked = true;
     db.className = "badge ok"; db.innerHTML = Bi("🟢 Açık","🟢 On");
   } else {
-    $("chkDoH").checked = false;
+    chk.checked = false;
     db.className = "badge stop"; db.innerHTML = Bi("🔴 Kapalı","🔴 Off");
   }
 }
 
 // ---------- DoH ----------
-function EnableDoH(){
-  RunCapture("netsh dns add encryption server=8.8.8.8 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
-  RunCapture("netsh dns add encryption server=8.8.4.4 dohtemplate=https://dns.google/dns-query autoupgrade=yes udpfallback=no");
-  var adp = trim(RunCapture("powershell -NoProfile -Command \"(Get-NetAdapter | ? {$_.Status -eq 'Up'} | Sort-Object ifIndex | Select -First 1).Name\""));
-  if (adp !== ""){
-    RunCapture('netsh interface ipv4 set dnsservers name="' + adp + '" static 8.8.8.8 primary');
-    RunCapture('netsh interface ipv4 add dnsservers name="' + adp + '" 8.8.4.4 index=2');
-  }
-  RunCapture("ipconfig /flushdns");
-}
+function EnableDoH(){ return trim(RunPs("dns.ps1", "-Action enable")); }
 
 function DoHToggle(){
   var want = $("chkDoH").checked;
+  if (!want && !window.confirm("DoH kapatılsın ve DNS ayarların açmadan önceki haline dönsün mü? / Turn DoH off and restore your previous DNS settings?")){
+    $("chkDoH").checked = true; return;
+  }
   defer(function(){
+    var r, note = $("dohNote");
     if (want){
-      EnableDoH();
-      Toast(Bi("DoH açıldı.","DoH enabled."));
+      r = EnableDoH();
+      if (r.indexOf("ENABLED") >= 0) Toast(Bi("DoH açıldı (eski ayarlar yedeklendi).","DoH enabled (old settings backed up)."));
+      else alert("DoH: " + r);
     } else {
-      RunCapture("netsh dns delete encryption server=8.8.8.8");
-      RunCapture("netsh dns delete encryption server=8.8.4.4");
-      RunCapture("ipconfig /flushdns");
-      Toast(Bi("DoH kapatıldı.","DoH disabled."));
+      r = trim(RunPs("dns.ps1", "-Action disable"));
+      if (r.indexOf("DISABLED_NOBACKUP") >= 0){
+        note.style.display = "block";
+        note.innerHTML = Bi("Yedek bulunamadı (DoH eski bir panel sürümüyle açılmıştı): DoH kapatıldı, ağ kartlarının DNS'i otomatiğe (DHCP) alındı.",
+                            "No backup found (DoH was enabled by an older panel version): DoH turned off, adapters set back to automatic (DHCP) DNS.");
+        Toast(Bi("DoH kapatıldı, DNS otomatik.","DoH off, DNS automatic."));
+      } else if (r.indexOf("DISABLED") >= 0){
+        Toast(Bi("DoH kapatıldı, eski DNS geri yüklendi.","DoH off, previous DNS restored."));
+      } else alert("DoH: " + r);
     }
   });
 }
@@ -538,33 +785,71 @@ function cleanHost(v){
   var h = trim(v).replace(/^https?:\/\//i, "");
   var s = h.indexOf("/");
   if (s >= 0) h = h.substring(0, s);
-  return h;
+  h = h.toLowerCase();
+  return /^[a-z0-9.-]+$/.test(h) ? h : "";
 }
 
 function DoTest(){
-  var h = cleanHost($("testInput").value);
-  if (h === ""){ Toast(Bi("Önce bir adres yaz.","Enter an address first.")); return; }
+  var raw = trim($("testInput").value);
+  var h = cleanHost(raw);
+  if (raw !== "" && h === ""){ Toast(Bi("Geçersiz adres.","Invalid address.")); return; }
   var lg = $("testLog");
   lg.style.display = "block";
   lg.innerText = "...";
   Busy(true);
   window.setTimeout(function(){
-    var ps = "$h='" + h + "'; try{$a=Resolve-DnsName $h -Type A -EA Stop|?{$_.IPAddress}; 'DNS : OK  -> '+($a.IPAddress -join ', ')}catch{'DNS : FAIL (cozumlenemedi)'}; try{$r=Invoke-WebRequest ('https://'+$h) -Method Head -TimeoutSec 15 -MaximumRedirection 3 -UseBasicParsing; 'HTTP: OK  -> '+$r.StatusCode+' '+$r.StatusDescription}catch{'HTTP: FAIL -> '+$_.Exception.Message}";
-    var res = RunCapture("powershell -NoProfile -Command \"" + ps + "\"");
+    var res = RunPs("test-sites.ps1", h ? '-Site "' + h + '"' : "");
     $("testLog").innerText = res;
     Busy(false);
   }, 60);
 }
 
+// ---------- blacklist yardimcilari ----------
+function BlacklistDomains(){
+  var bl = HtaDir() + "blacklist.txt", out = [];
+  if (!fso.FileExists(bl)) return null;
+  try {
+    var f = fso.OpenTextFile(bl, 1, false);
+    while (!f.AtEndOfStream){ var l = trim(f.ReadLine()).toLowerCase(); if (l) out.push(l); }
+    f.Close();
+  } catch(e){}
+  return out;
+}
+function BlCovers(list, host){
+  for (var i = 0; i < list.length; i++){
+    var d = list[i];
+    if (host == d) return true;
+    if (host.length > d.length && host.substring(host.length - d.length - 1) == "." + d) return true;
+  }
+  return false;
+}
+
 // ---------- otomatik mod bulucu ----------
 function AutoStart(){
-  gHost = cleanHost($("autoInput").value);
-  if (gHost === ""){ Toast(Bi("Önce bir site adresi yaz.","Enter a site first.")); return; }
-  gModes = ["-5 --set-ttl 3", "-5 --set-ttl 4", "-5", "-2", "-1", "-6", "-9", "-4"];
-  gIdx = 0; gWinner = "";
+  if (!NeedExe()) return;
+  var raw = trim($("autoInput").value);
+  gHost = cleanHost(raw);
+  if (raw !== "" && gHost === ""){ Toast(Bi("Geçersiz adres.","Invalid address.")); return; }
+  // ISP suggestions first, then the global order, without duplicates.
+  var first = (ISPS[Settings.isp] || ISPS.other).modes;
+  gModes = [];
+  var all = first.concat(MODE_ORDER);
+  for (var i = 0; i < all.length; i++){ if (!InArr(gModes, all[i])) gModes.push(all[i]); }
+  gIdx = 0; gWinner = ""; gDnsFails = 0;
   var lg = $("autoLog");
   lg.style.display = "block";
-  lg.innerHTML = "<b>" + gHost + "</b> için en iyi mod aranıyor... / searching best mode...<br>";
+  lg.innerHTML = Bi("Discord" + (gHost ? " + <b>" + Esc(gHost) + "</b>" : "") + " için mod aranıyor...", "Searching a mode for Discord" + (gHost ? " + <b>" + Esc(gHost) + "</b>" : "") + "...") + "<br>";
+  // The site must be in the blacklist, otherwise GoodbyeDPI leaves it alone.
+  var list = BlacklistDomains();
+  if (list && gHost && !BlCovers(list, gHost)){
+    try {
+      var f = fso.OpenTextFile(HtaDir() + "blacklist.txt", 8, false);
+      f.WriteLine(""); f.Write(gHost); f.Close();
+      NormalizeBlacklistFile();
+      RenderBlacklist();
+      lg.innerHTML += Bi("&nbsp;&nbsp;+ " + Esc(gHost) + " listeye eklendi (listede olmayan siteye bypass uygulanmaz).", "&nbsp;&nbsp;+ " + Esc(gHost) + " added to the list (unlisted sites get no bypass).") + "<br>";
+    } catch(e){}
+  }
   Busy(true);
   RunCapture("sc stop " + SVC);
   RunCapture("taskkill /IM goodbyedpi.exe /F");
@@ -572,25 +857,36 @@ function AutoStart(){
   window.setTimeout(AutoStep, 400);
 }
 
+function InArr(a, v){ for (var i = 0; i < a.length; i++){ if (a[i] == v) return true; } return false; }
+
+function ParseResult(out){
+  var i = out.indexOf("RESULT:");
+  if (i < 0) return "";
+  var r = out.substring(i + 7), nl = r.indexOf("\n");
+  if (nl >= 0) r = r.substring(0, nl);
+  return trim(r);
+}
+
 function AutoStep(){
   var lg = $("autoLog");
   if (gWinner !== "" || gIdx > gModes.length - 1){ AutoFinish(); return; }
   var m = gModes[gIdx];
-  try { wsh.Run('"' + ExePath + '" ' + m, 0, false); } catch(e){}
+  try { wsh.Run('"' + ExePath + '" ' + FullArgs(m, '"'), 0, false); } catch(e){}
   Pause(3);
-  var res = TestMode(gHost);
+  var out = RunPs("test-sites.ps1", "-Quick" + (gHost ? ' -Site "' + gHost + '"' : ""));
+  var res = ParseResult(out);
   RunCapture("taskkill /IM goodbyedpi.exe /F");
-  lg.innerHTML += '&nbsp;&nbsp;<span style="font-family:Consolas">' + m + '</span> &rarr; ' + res + "<br>";
+  var shown = res.replace(/:OK/g, ":✔").replace(/:FAIL/g, ":✖").replace(/:SKIP/g, ":–");
+  lg.innerHTML += '&nbsp;&nbsp;<span style="font-family:Consolas">' + Esc(m) + '</span> &rarr; ' + Esc(shown || "?") + "<br>";
   lg.scrollTop = lg.scrollHeight;
-  if (res.indexOf("SITE:OK") >= 0 && res.indexOf("NET:OK") >= 0 && res.indexOf("DISC:OK") >= 0) gWinner = m;
+  if (res !== "" && res.indexOf("FAIL") < 0 && res.indexOf("SKIP") < 0 && res.indexOf("NET:OK") >= 0) gWinner = m;
+  if (res.indexOf("DNS:FAIL") >= 0) gDnsFails++;
   gIdx++;
+  // DNS failing does not depend on the mode unless GoodbyeDPI redirects DNS:
+  // stop early and say what to do.
+  if (gWinner === "" && Settings.dnsredir != "1" && gDnsFails >= 2){ gIdx = gModes.length; }
   Pause(1);
   window.setTimeout(AutoStep, 250);
-}
-
-function TestMode(host){
-  var ps = "function T($u){try{Invoke-WebRequest $u -Method Head -TimeoutSec 8 -MaximumRedirection 3 -UseBasicParsing | Out-Null;'OK'}catch{'FAIL'}}; 'SITE:'+(T('https://" + host + "'))+' NET:'+(T('https://www.google.com'))+' DISC:'+(T('https://discord.com'))";
-  return trim(RunCapture("powershell -NoProfile -Command \"" + ps + "\""));
 }
 
 function AutoFinish(){
@@ -598,13 +894,19 @@ function AutoFinish(){
   RunCapture("taskkill /IM goodbyedpi.exe /F");
   if (gWinner !== ""){
     SetServiceMode(gWinner);
-    var els = document.getElementsByName("mode");
-    for (var i = 0; i < els.length; i++){ els[i].checked = (els[i].value == gWinner); }
-    lg.innerHTML += '<br><b style="color:#4ade80">✔ Bulundu &amp; uygulandı / Found &amp; applied: ' + gWinner + '</b>';
+    SelectModeRadio(gWinner);
+    lg.innerHTML += '<br><b style="color:#4ade80">✔ ' + Bi("Bulundu &amp; uygulandı: ","Found &amp; applied: ") + Esc(gWinner) + '</b>';
+    lg.innerHTML += '<br>' + Bi("Discord uygulamasını saatin yanındaki simgeden tamamen kapatıp yeniden aç.","Fully quit Discord from the tray icon and reopen it.");
     Toast(Bi("Çalışan mod uygulandı: ","Working mode applied: ") + gWinner);
   } else {
     SetServiceMode(SelectedMode());
-    lg.innerHTML += '<br><b style="color:#f87171">✖ Çalışan mod bulunamadı. DoH\'u açıp tekrar dene. / No working mode found. Enable DoH and retry.</b>';
+    if (gDnsFails > 0){
+      lg.innerHTML += '<br><b style="color:#f87171">✖ ' + Bi("DNS Discord'u çözemiyor — mod değiştirmek bunu düzeltmez. Önce DoH'u aç (Windows 11) ya da 'GoodbyeDPI DNS yönlendirme'yi işaretleyip tekrar dene.",
+                                                              "DNS cannot resolve Discord — changing the mode will not fix that. Enable DoH first (Windows 11) or tick 'GoodbyeDPI DNS redirection' and retry.") + '</b>';
+    } else {
+      lg.innerHTML += '<br><b style="color:#f87171">✖ ' + Bi("Çalışan mod bulunamadı. DoH açık mı kontrol et, QUIC engellemeyi dene; olmazsa bu hatta GoodbyeDPI yetmiyor olabilir (README → Sorun Giderme).",
+                                                              "No working mode found. Check DoH, try blocking QUIC; otherwise GoodbyeDPI may not be enough on this line (README → Troubleshooting).") + '</b>';
+    }
     Toast(Bi("Çalışan mod bulunamadı.","No working mode found."));
   }
   Busy(false);
@@ -625,16 +927,41 @@ function RenderBlacklist(){
   $("blEdit").value = content;
 }
 
+// GoodbyeDPI reads every line as a host name (no comments, no trimming):
+// keep one clean lowercase domain per line.
+function CleanBlacklistText(t){
+  var lines = String(t).replace(/\r/g, "").split("\n"), out = [];
+  for (var i = 0; i < lines.length; i++){
+    var h = cleanHost(lines[i]);
+    if (h && !InArr(out, h)) out.push(h);
+  }
+  return out.join("\r\n") + "\r\n";
+}
+
+function NormalizeBlacklistFile(){
+  var bl = HtaDir() + "blacklist.txt";
+  var f = fso.OpenTextFile(bl, 1, false), t = f.AtEndOfStream ? "" : f.ReadAll(); f.Close();
+  var w = fso.CreateTextFile(bl, true); w.Write(CleanBlacklistText(t)); w.Close();
+}
+
 function SaveBlacklist(){
   var bl = HtaDir() + "blacklist.txt";
   var f = fso.CreateTextFile(bl, true);
-  f.Write($("blEdit").value);
+  f.Write(CleanBlacklistText($("blEdit").value));
   f.Close();
+  RenderBlacklist();
   Toast(Bi("Liste kaydedildi. Uygulamak için 'Seçili Modu Uygula'ya tıkla.","List saved. Click 'Apply Selected Mode' to apply."));
 }
 
-// ---------- exe kontrol & indirme ----------
+// ---------- exe kontrol & indirme (yalniz bin\ eksikse) ----------
 function CheckExe(){
+  if (Arch == "arm64"){
+    $("downloadCard").style.display = "block";
+    $("btnDownload").disabled = true;
+    $("downloadLog").style.display = "block";
+    $("downloadLog").innerHTML = Bi("ARM64 Windows desteklenmiyor: WinDivert'in ARM64 sürücüsü yok.", "ARM64 Windows is not supported: WinDivert has no ARM64 driver.");
+    return;
+  }
   if (!fso.FileExists(ExePath)){
     $("downloadCard").style.display = "block";
   }
@@ -643,57 +970,26 @@ function CheckExe(){
 function DoDownload(){
   var lg = $("downloadLog");
   lg.style.display = "block";
-  lg.innerHTML = Bi("⏳ GoodbyeDPI indiriliyor, lütfen bekleyin... (30-60 sn)", "⏳ Downloading GoodbyeDPI, please wait... (30-60s)");
+  lg.innerHTML = Bi("⏳ GoodbyeDPI 0.2.3rc3 indiriliyor ve doğrulanıyor... (30-60 sn)", "⏳ Downloading and verifying GoodbyeDPI 0.2.3rc3... (30-60s)");
   Busy(true);
 
   window.setTimeout(function(){
     try {
-      var dir = HtaDir();
-      var tmpDir = wsh.ExpandEnvironmentStrings("%TEMP%");
-      var ps1 = tmpDir + "\\gdpi_download.ps1";
-
-      var f = fso.CreateTextFile(ps1, true);
-      f.WriteLine("$ProgressPreference='SilentlyContinue'");
-      f.WriteLine("$dir='" + dir.replace(/'/g,"''") + "'");
-      f.WriteLine("try {");
-      f.WriteLine("  $rel = Invoke-RestMethod 'https://api.github.com/repos/ValdikSS/GoodbyeDPI/releases/latest'");
-      f.WriteLine("  $asset = $rel.assets | Where-Object { $_.name -like '*.zip' } | Select-Object -First 1");
-      f.WriteLine("  if (-not $asset) { throw 'ZIP bulunamadi' }");
-      f.WriteLine("  $zip = Join-Path $dir 'goodbyedpi_download.zip'");
-      f.WriteLine("  Invoke-WebRequest $asset.browser_download_url -OutFile $zip");
-      f.WriteLine("  $tmp = Join-Path $dir 'goodbyedpi_tmp'");
-      f.WriteLine("  if (Test-Path $tmp) { Remove-Item $tmp -Recurse -Force }");
-      f.WriteLine("  Expand-Archive $zip -DestinationPath $tmp -Force");
-      f.WriteLine("  $arch = if ([Environment]::Is64BitOperatingSystem) { 'x86_64' } else { 'x86' }");
-      f.WriteLine("  $archDir = Get-ChildItem $tmp -Recurse -Directory | Where-Object { $_.Name -eq $arch } | Select-Object -First 1");
-      f.WriteLine("  if ($archDir) { Copy-Item (Join-Path $archDir.FullName '*') -Destination $dir -Force }");
-      f.WriteLine("  else {");
-      f.WriteLine("    $exe = Get-ChildItem $tmp -Recurse -Filter 'goodbyedpi.exe' | Select-Object -First 1");
-      f.WriteLine("    if ($exe) { Copy-Item (Join-Path $exe.DirectoryName '*') -Destination $dir -Force }");
-      f.WriteLine("    else { throw 'goodbyedpi.exe bulunamadi' }");
-      f.WriteLine("  }");
-      f.WriteLine("  Remove-Item $zip -Force -EA SilentlyContinue");
-      f.WriteLine("  Remove-Item $tmp -Recurse -Force -EA SilentlyContinue");
-      f.WriteLine("  Write-Output 'SUCCESS'");
-      f.WriteLine("} catch { Write-Output ('ERROR:' + $_.Exception.Message) }");
-      f.Close();
-
-      var result = RunCapture("powershell -NoProfile -ExecutionPolicy Bypass -File \"" + ps1 + "\"");
-      try { fso.DeleteFile(ps1); } catch(e){}
-
+      var root = HtaDir();
+      var result = RunPs("fetch-goodbyedpi.ps1", '-Root "' + root + '."');
+      ResolveExe();
       if (result.indexOf("SUCCESS") >= 0 && fso.FileExists(ExePath)){
         lg.innerHTML = Bi("⏳ Servis kuruluyor ve DoH açılıyor...", "⏳ Installing service and enabling DoH...");
-        SetServiceMode("-5 --set-ttl 3");
+        SetServiceMode(SelectedMode());
         EnableDoH();
-        $("chkDoH").checked = true;
         $("downloadCard").style.display = "none";
         Toast(Bi("GoodbyeDPI + DoH kuruldu!","GoodbyeDPI + DoH installed!"));
       } else {
         var err = result.indexOf("ERROR:") >= 0 ? result.substring(result.indexOf("ERROR:") + 6) : result;
-        lg.innerHTML = '<b style="color:#f87171">' + Bi("İndirme başarısız: ","Download failed: ") + trim(err) + "</b>";
+        lg.innerHTML = '<b style="color:#f87171">' + Bi("İndirme başarısız: ","Download failed: ") + Esc(trim(err)) + "</b>";
       }
     } catch(e){
-      $("downloadLog").innerHTML = '<b style="color:#f87171">' + e.message + "</b>";
+      $("downloadLog").innerHTML = '<b style="color:#f87171">' + Esc(e.message) + "</b>";
     }
     Busy(false);
     RefreshStatus();
