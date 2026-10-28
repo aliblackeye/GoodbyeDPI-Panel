@@ -4,34 +4,76 @@
 
 ![GoodbyeDPI Panel](screenshot.png)
 
-[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) için, kullanımı **çok kolay** bir Windows kontrol paneli. DPI (Derin Paket İncelemesi) ve DNS engellemelerini aşmak için GoodbyeDPI'yi bir **Windows servisi** olarak kurar, ayarlarını tek bir pencereden yönetmeni sağlar. Tek dosya, kurulum gerektirmez.
+[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI) için, kullanımı **çok kolay** bir Windows kontrol paneli. DPI (Derin Paket İncelemesi) ve DNS engellemelerini aşmak için GoodbyeDPI'yi bir **Windows servisi** olarak kurar, ayarlarını tek bir pencereden yönetmeni sağlar. **GoodbyeDPI paketle gelir** (`bin\x86_64`, `bin\x86`), ayrıca indirmen gerekmez.
 
 > Yeni başlayanlar için sade ve anlaşılır arayüz — her ayarın ne işe yaradığı açıkça yazılır.
+
+> ⚠️ **Dürüst not:** Hiçbir mod her sağlayıcıda ve her hatta garanti çalışmaz. Sağlayıcılar DPI ayarlarını değiştiriyor; aynı sağlayıcıda bile hat hatta sonuç değişebiliyor. Panelin **"Otomatik Bul"** düğmesi modları senin hattında tek tek dener ve çalışanı kurar — kesin sonucu o verir.
 
 ---
 
 ## ⚡ Tek Tıkla Kurulum (En Kolay Yol)
 
-> **GoodbyeDPI'yı hiç indirmedin mi? Sorun değil — her şeyi otomatik halleder.**
-
 1. [**⬇️ Bu repoyu indir**](../../archive/refs/heads/main.zip) (veya sayfanın üstündeki yeşil **Code** → **Download ZIP**)
-2. ZIP'i bir klasöre çıkar
+2. ZIP'i bir klasöre çıkar (ör. `C:\GoodbyeDPI`)
 3. **`setup.cmd`**'ye çift tıkla → UAC'ye **"Evet"** de
-4. **Bitti!** GoodbyeDPI otomatik indirilir, servise kurulur ve başlatılır.
+4. İnternet sağlayıcını seç (1-7; bilmiyorsan 7 ya da bekle)
+5. **Bitti!** GoodbyeDPI servis olarak kurulur, DoH (şifreli DNS) açılır, panel açılır.
+6. Discord açılmazsa panelde **"Otomatik Bul & Uygula"**ya bas.
 
-> **Alternatif:** `Start-Panel.cmd`'ye çift tıkla → panel açılır → **"İndir ve Kur"** butonuna bas. Aynı şeyi görsel arayüzden yapar.
+> **Alternatif:** `Start-Panel.cmd`'ye çift tıkla → panel açılır → **"Kur"**.
 
 ---
 
 ## ✨ Özellikler
 
-- ⬇️ **Otomatik indirme** — GoodbyeDPI yoksa tek tıkla GitHub'dan indirir ve kurar. Ayrıca indirmene gerek yok.
-- 🟢 **Servis yönetimi** — Tek tıkla Kur / Kaldır / Başlat / Durdur / Yeniden Başlat. Otomatik başlangıçla kurulur (bilgisayar açılınca sessizce çalışır, CMD penceresi açılmaz).
-- 🎚️ **Açıklamalı mod seçici** — `-1`…`-9` ve `--set-ttl` seçenekleri, her birinin ne işe yaradığı açıklanmış. ⭐ Türkiye için önerilen hazır mod.
-- 🪄 **Otomatik en iyi modu bul** — Açılmayan bir site yaz, panel modları tek tek deneyip o siteyi açan modu otomatik bulup uygular.
-- 🔒 **DNS şifreleme (DoH)** — Tek anahtarla DNS-over-HTTPS aç/kapat (DNS tabanlı engellemeleri aşar).
-- 🧪 **Site erişim testi** — Bir adres gir, DNS ve HTTPS bağlantısının çalışıp çalışmadığını gör.
-- 🌍 **Çift dil** — Türkçe / İngilizce (tek düğmeyle değiştirilir).
+- 📦 **GoodbyeDPI dahil** — Resmi 0.2.3rc3 sürümü değiştirilmeden `bin\` içinde gelir; makinenin mimarisine göre (64/32 bit) doğru dosya seçilir. `bin\` silinmişse aynı sürüm GitHub'dan indirilir ve SHA-256 ile doğrulanır.
+- 🟢 **Servis yönetimi** — Tek tıkla Kur / Kaldır / Başlat / Durdur / Yeniden Başlat. Otomatik başlangıç, CMD penceresi yok.
+- 🏷️ **Sağlayıcıya göre öneri** — Türk Telekom, TurkNet, Superonline, Vodafone, Kablonet, Millenicom için topluluğun çalıştığını bildirdiği mod (kaynaklı, aşağıdaki tabloya bak).
+- 🪄 **Otomatik en iyi modu bul** — Modları sırayla dener; Discord'un API'si, gateway'i, CDN'i ve **güncelleyicisi (updates.discord.com)**, senin yazdığın site ve genel internet açılınca durur ve o modu kurar.
+- 🔒 **Geri alınabilir DoH** — Windows'un DNS-over-HTTPS'ini açar (Google + Cloudflare, IPv4 + IPv6). Eski DNS ayarların yedeklenir; kapatınca aynen geri gelir.
+- 🎯 **Blacklist modu** — Bypass yalnız listedeki sitelere (Discord'un tüm alan adları dahil) uygulanır; diğer siteler etkilenmez.
+- 🧪 **Site erişim testi**, 🌍 **Türkçe / İngilizce**.
+
+---
+
+## 🏷️ Sağlayıcıya göre öneriler (topluluk bilgisi)
+
+> Bunlar kullanıcı bildirimleridir, **sağlayıcıda ve hatta değişebilir**. Panel "Otomatik Bul"da önce seçtiğin sağlayıcının modlarını dener. Tüm sağlayıcılarda **önce DoH'u aç**: Discord Türkiye'de DNS'te de engelli.
+
+| Sağlayıcı | İlk denenen | Sonra | Kaynak |
+|---|---|---|---|
+| Türk Telekom | `-5 --set-ttl 5` | `-5 --set-ttl 3`, `-5 --set-ttl 4` | [GoodbyeDPI-Turkey `turkey_dnsredir.cmd`](https://github.com/cagritaskn/GoodbyeDPI-Turkey/tree/master/windows) (varsayılan mod); geliştiricisi TT'de Discord'a girebildiğini yazıyor: [issue #28](https://github.com/cagritaskn/GoodbyeDPI-Turkey/issues/28) (01.2025) |
+| TurkNet | **DoH**, sonra `-5 --set-ttl 5` | `-5 --set-ttl 3`, `-6` | Engel çoğunlukla DNS'te: Discord uygulaması "checking for updates"da takılan kullanıcıya "TurkNet yalnız DNS bazlı engelliyor, DNS'i değiştirmen yeter" denmiş ([Technopat](https://www.technopat.net/sosyal/konu/goodbyedpi-ile-discord-calismiyor.3597499/), 01.2025); TurkNet VDSL/fiber kullanıcıları DNS değiştirerek girebildiğini, bir kullanıcı IPv6'yı kapatınca düzeldiğini yazıyor ([Techolay](https://techolay.net/sosyal/konu/turknette-discorda-goodbyedpi-olmadan-girilmiyor.94180/), 03.2025). TurkNet'e özel mod kanıtı az. |
+| Turkcell Superonline | `-5 --set-ttl 5` | `-5`, `-9`, `--set-ttl 3` | [GoodbyeDPI-Turkey Superonline alternatifleri](https://github.com/cagritaskn/GoodbyeDPI-Turkey/tree/master/windows) (alt. 1/3 `--set-ttl 3`, alt. 2/4 `-5`, alt. 5/6 `-9`; 3/4/5 DNS yönlendirmeli). Alt. 4 ([Technopat](https://www.technopat.net/sosyal/konu/goodbyedpi-superonlineda-calismiyor.3886809/), 08.2025) ve alt. 5 ([Techolay](https://techolay.net/sosyal/konu/goodbyedpi-ve-superonline-ikilisi-ile-discorda-uygulamadan-girebilme.108205/), 04.2025) ile girenler var; bazılarında hiçbiri tutmamış. |
+| Vodafone Net | `-6` | `-5 --set-ttl 5`, `-9` | `-6` ile girildiği bildiriliyor ([Techolay](https://techolay.net/sosyal/konu/vodafone-nette-discorda-girebilmek-icin-en-iyi-yontem-nedir.194820/), 05.2026, iki kullanıcı). ⚠ Vodafone sıkı: Mart 2026'da GoodbyeDPI birden durdu, kullanıcılar SplitWire'a geçti ([Technopat](https://www.technopat.net/sosyal/konu/goodbyedpi-ile-vodafone-internette-discorda-girilemiyor.4065450/)); Eylül 2026'da benzer bildirim ([issue #164](https://github.com/cagritaskn/GoodbyeDPI-Turkey/issues/164)). |
+| Türksat Kablonet | `-6` | `-5`, `-5 --set-ttl 5` | `-5` durdu, `-6` açıyor (takılma olabiliyor): [issue #59](https://github.com/cagritaskn/GoodbyeDPI-Turkey/issues/59) (03.2025) |
+| Millenicom | **DoH**, sonra `-5 --set-ttl 5` | `-5 --set-ttl 3`, `-6` | Bir kullanıcı Millenicom'da DNS değiştirmenin yettiğini yazıyor ([Techolay](https://techolay.net/sosyal/konu/turknette-discorda-goodbyedpi-olmadan-girilmiyor.94180/), 03.2025); başka konuda DoH önerilmiş, Kaspersky'nin GoodbyeDPI'yi engellediği görülmüş ([Techolay](https://techolay.net/sosyal/konu/millenicomda-goodbyedpi-discord-icin-calismiyor.65274/page-2), 11.2024). |
+| Bilmiyorum / Diğer | `-5 --set-ttl 3` (varsayılan) | tüm liste | — |
+
+**Otomatik Bul sırası** (sağlayıcının modlarından sonra): `-5 --set-ttl 5`, `-5 --set-ttl 3`, `-5 --set-ttl 4`, `-6`, `-5`, `-9`, `--set-ttl 3`, `-7`, `-8`, `-2`, `-1`, `-4`.
+
+---
+
+## 🩺 Discord açılmıyor (güncelleme ekranında takılıyor)
+
+Belirti: tarayıcıda bazı engelli siteler açılıyor ama **Discord masaüstü uygulaması küçük "Güncellemeler denetleniyor" penceresinde kalıyor** ve 15-20 sn'de bir yeniden deniyor. Sebep çoğunlukla:
+
+1. **DNS:** Tarayıcı kendi "Güvenli DNS"ini kullanabilir, ama **Discord uygulaması Windows'un DNS'ini kullanır**. Discord adları sağlayıcının DNS'inde engelli olduğu için güncelleyici `updates.discord.com`'a hiç ulaşamaz. (TurkNet'te tam bu belirtiyle DNS değişikliğinin yettiği bildirildi: [Technopat](https://www.technopat.net/sosyal/konu/goodbyedpi-ile-discord-calismiyor.3597499/).)
+2. **Eski blacklist:** Listede Discord'un güncelleyici/gateway/CDN alan adları yoksa GoodbyeDPI onlara bypass uygulamaz.
+3. **Mod:** Senin hattında seçili mod tutmuyordur.
+
+Adımlar:
+
+1. Bu sürümü kur (`setup.cmd`) ya da panelde **"Seçili Modu Uygula"** de — servis yeni blacklist'le ve `--allow-no-sni` ile yeniden yazılır.
+2. Panelde **"5) DoH'u Aç"**. Durum 🟢 olmalı. (Windows 10'da yerleşik DoH yok: "GoodbyeDPI DNS yönlendirme" seçeneğini işaretleyip "Seçili Modu Uygula" de.)
+3. Panelde sağlayıcını seç → **"Otomatik Bul & Uygula"**. Günlükte `DNS:✔ DISCORD:✔ GATEWAY:✔ CDN:✔ UPDATES:✔ NET:✔` gören ilk mod kurulur.
+   - `DNS:✖` görürsen sorun mod değil, DNS: 2. adıma dön.
+4. Discord'u **saatin yanındaki simgeden sağ tık → "Discord'dan Çık"** ile tamamen kapat, yeniden aç. (Pencereyi kapatmak yetmez.) DNS değiştikten sonra `ipconfig /flushdns` da yardımcı olur (panel DoH açınca önbelleği zaten temizler).
+5. Hâlâ olmuyorsa: **QUIC'i engelle (-q)** seçeneğini işaretle → "Seçili Modu Uygula"; VPN/WARP açıksa kapat; Kaspersky gibi antivirüsler WinDivert'i engelleyebilir.
+6. Hiçbir mod tutmuyorsa o hatta GoodbyeDPI yetmiyor olabilir (özellikle Eylül 2026 Vodafone bildirimleri). Bu bir panel hatası değildir.
+
+> Test notu: Yazarın test hattında şifresiz DNS sorguları (8.8.8.8, 9.9.9.9 ve GoodbyeDPI'nin örnek verdiği Yandex `77.88.8.8:1253` dahil) engelli adlar için **cevapsız kaldı**, DoH ile çözüldü. Bu yüzden önce DoH önerilir; "GoodbyeDPI DNS yönlendirme" yalnız DoH'u olmayan Windows için yedek yoldur.
 
 ---
 
@@ -39,56 +81,67 @@
 
 ### Yol A: Otomatik (önerilen)
 
-`setup.cmd`'ye çift tıkla — GoodbyeDPI'yı indirir, servisi kurar, paneli açar. Başka bir şey yapmana gerek yok.
+`setup.cmd`'ye çift tıkla — sağlayıcını sorar, servisi kurar, DoH'u açar, paneli açar.
 
-### Yol B: Manuel
+### Yol B: Panelden
 
-1. [GoodbyeDPI'nin son sürümünü](https://github.com/ValdikSS/GoodbyeDPI/releases) indir ve bir klasöre çıkar (içinde `goodbyedpi.exe` olmalı).
-2. Bu depodaki dosyaları **`goodbyedpi.exe` ile aynı klasöre** kopyala.
-3. **`Start-Panel.cmd`**'ye çift tıkla → çıkan **UAC penceresine "Evet"** de.
+**`Start-Panel.cmd`**'ye çift tıkla → UAC'ye **"Evet"** → sağlayıcını seç → **"Kur"**.
 
 > Panel yönetici yetkisiyle çalışmak zorundadır (servis ve DNS ayarlarını değiştirebilmek için). Bu yüzden açılışta bir kez UAC sorar.
 
-Klasör şöyle görünmeli:
+Klasör:
 
 ```
-GoodbyeDPI\
-├── goodbyedpi.exe          ← (otomatik indirilir veya manuel koyarsın)
-├── WinDivert.dll
-├── WinDivert64.sys
-├── GoodbyeDPI-Panel.hta    ← arayüz / the panel
-├── Start-Panel.cmd         ← başlatıcı (buna çift tıkla) / launcher (double-click this)
-├── setup.cmd               ← ⚡ tek tıkla kurulum / one-click setup
-├── install.cmd             ← (opsiyonel) komut satırından servis kurar / (optional) CLI install
-└── uninstall.cmd           ← (opsiyonel) komut satırından servisi kaldırır / (optional) CLI uninstall
+GoodbyeDPI-Panel\
+├── bin\
+│   ├── x86_64\  goodbyedpi.exe, WinDivert.dll, WinDivert64.sys   ← 64 bit Windows
+│   ├── x86\     goodbyedpi.exe, WinDivert.dll, WinDivert32.sys   ← 32 bit Windows
+│   └── SHA256SUMS.txt
+├── licenses\                ← GoodbyeDPI (Apache-2.0), WinDivert (LGPLv3/GPLv2) lisans metinleri
+├── scripts\                 ← DoH aç/kapa (yedekli), bağlantı testi, yedek indirici
+├── GoodbyeDPI-Panel.hta     ← arayüz
+├── Start-Panel.cmd          ← başlatıcı (buna çift tıkla)
+├── setup.cmd                ← ⚡ tek tıkla kurulum
+├── install.cmd              ← (opsiyonel) komut satırından kurulum: install.cmd [mod]
+├── uninstall.cmd            ← (opsiyonel) kaldırma (+ DoH geri alma sorusu)
+├── blacklist.txt            ← bypass uygulanacak siteler
+└── THIRD_PARTY_NOTICES.md   ← sürüm, kaynak adresleri, SHA-256
 ```
 
----
+- **ARM64 Windows desteklenmez** (WinDivert'in ARM64 sürücüsü yok).
+- **Windows 10:** Windows'un yerleşik DoH'u yok; panel bunu söyler ve DNS yönlendirme seçeneğini önerir.
 
-## 🚀 Hızlı Başlangıç
+### Eski bir kurulumu güncelleme
 
-1. Paneli aç.
-2. **DoH'u Aç** (DNS engellemeleri için).
-3. Mod bölümünden ⭐ **`-5 --set-ttl 3`** seçili haldeyken **"Kur"**a bas.
-4. Bir site hâlâ açılmıyorsa → **"Otomatik Bul & Uygula"** ile o site için doğru modu buldur.
+Eski sürüm (`goodbyedpi.exe` panelle aynı klasörde, servis `--blacklist` olmadan) için:
+
+1. Bu repoyu indirip çıkar ya da dosyaları eski klasörün **üzerine kopyala** (ör. `C:\Program Files\GoodbyeDPI`). `bin\` gelir; panel artık onu kullanır. Eski kökteki `goodbyedpi.exe` yedek olarak kalabilir.
+2. `Start-Panel.cmd` → **"Seçili Modu Uygula"** (ya da `setup.cmd`). Servis `bin\x86_64\goodbyedpi.exe <mod> --blacklist "...\blacklist.txt" --allow-no-sni` olarak yeniden yazılır.
+3. DoH eski panelle açıldıysa yedeği yoktur: kapatırsan ağ kartı DNS'i otomatiğe (DHCP) alınır.
 
 ---
 
 ## 🎚️ Modlar ne işe yarar?
 
-Modlar, engellemeyi aşma **tekniğini** belirler. Her site farklı yöntemle engellenebildiği için tek doğru mod yoktur — bir site açılmıyorsa modu değiştir.
+Modlar, engellemeyi aşma **tekniğini** belirler (GoodbyeDPI 0.2.3rc3). Tek doğru mod yoktur.
 
 | Mod | Açıklama |
 |-----|----------|
-| ⭐ `-5 --set-ttl 3` | **Önerilen.** Hem bağlantıyı koparan (RST) hem sessizce düşüren DPI'yi birden aşar. Çalışmazsa `--set-ttl 4` dene. |
-| `-1` | En hafif ve en hızlı. Basit engellemelerde yeterli. |
-| `-2` | Hafif, farklı parçalama boyutu. |
-| `-4` | En basit/pasif mod. |
-| `-5` | Orta-güçlü. Modern DPI için iyi başlangıç. |
-| `-6` | `-5`'in farklı varyantı (wrong-seq). |
-| `-9` | En agresif/kombine. Zor durumlar için; bazı siteleri yavaşlatabilir. |
+| ⭐ `-5 --set-ttl 3` | **Varsayılan.** Parçalama + TTL=3 sahte paket. Yazarın hattında test edildi. |
+| `-5 --set-ttl 5` | GoodbyeDPI-Turkey varsayılanı (TT / Superonline'da yaygın). |
+| `-5 --set-ttl 4` | Aynısı, TTL=4. |
+| `-6` | Sahte paket geçmiş sıra numarasıyla (wrong-seq). Vodafone / Kablonet bildirimleri. |
+| `-5` | TTL'i otomatik seçer (auto-ttl). |
+| `-9` | GoodbyeDPI'nin kendi varsayılanı: wrong-seq + wrong-chksum + QUIC engelleme. |
+| `--set-ttl 3` | Yalnız sahte paket, parçalama yok (Superonline alternatifi). |
+| `-7` / `-8` | wrong-chksum / wrong-seq + wrong-chksum. Sanal makinede ya da bazı modemlerde çalışmayabilir. |
+| `-2` / `-1` / `-4` | Eski (legacy) modlar; güncel DPI'de genelde yetmez. |
 
-**`--set-ttl N`:** DPI'yi şaşırtmak için düşük TTL'li sahte paket gönderir; "sessiz düşürme" tekniğini aşmaya yarar. Çalışmazsa `3` ↔ `4` değiştir.
+**Ek bayraklar (panel ekler):**
+- `--blacklist blacklist.txt` — bypass yalnız listedeki sitelere.
+- `--allow-no-sni` — blacklist varken eklenir. Chromium/Electron (Discord uygulaması dahil) post-quantum (Kyber) ClientHello'yu 2 TCP parçasına bölüyor; SNI ilk parçada değilse GoodbyeDPI listeyle eşleyemiyor ([upstream #330](https://github.com/ValdikSS/GoodbyeDPI/issues/330)). Bu bayrak SNI'si bulunamayan bağlantılara da bypass uygular.
+- `-q` (seçenek) — QUIC/HTTP3'ü engeller, uygulamalar TCP'ye düşer.
+- DNS yönlendirme (seçenek) — `--dns-addr 77.88.8.8 --dns-port 1253` (+ IPv6), GoodbyeDPI README'sindeki örnek.
 
 ---
 
@@ -96,16 +149,16 @@ Modlar, engellemeyi aşma **tekniğini** belirler. Her site farklı yöntemle en
 
 - **DPI (Derin Paket İncelemesi):** İnternet sağlayıcın trafiğine bakıp hangi siteye gittiğini anlar ve engeller. GoodbyeDPI, bu incelemeyi şaşırtacak şekilde paketleri parçalar/değiştirir.
 - **SNI engelleme:** HTTPS bağlanırken hangi siteye gittiğin (örn. `example.com`) açık yazılır. DPI bunu görüp ya bağlantıyı koparır (RST) ya da sessizce düşürür. GoodbyeDPI bu bilgiyi gizler.
-- **DNS engelleme:** Site adının IP adresine çevrilmesi bozulur. **DoH (DNS-over-HTTPS)** sorguları şifreleyerek bunu aşar.
+- **DNS engelleme:** Site adının IP adresine çevrilmesi bozulur. **DoH (DNS-over-HTTPS)** sorguları şifreleyerek bunu aşar. GoodbyeDPI DNS'i şifrelemez; bu yüzden ikisi birlikte gerekir.
 
 ---
 
-## 🩺 Sorun Giderme
+## 🩺 Diğer sorunlar
 
-- **Site hâlâ açılmıyor:** Önce **DoH'u aç**, sonra **Otomatik Bul** ile doğru modu buldur. Tarayıcıyı kapatıp aç.
-- **Tarayıcı kendi DNS'ini kullanıyor:** Chrome/Edge'de `Ayarlar → Gizlilik → Güvenli DNS`'i kapat (sistem DoH'u zaten hallediyor).
+- **Tarayıcı kendi DNS'ini kullanıyor:** Chrome/Edge'de `Ayarlar → Gizlilik → Güvenli DNS` açık kalabilir; sorun değil. Sistem DoH'u Discord uygulaması için gerekli.
 - **Panel açılmıyor:** `.hta`'ya değil **`Start-Panel.cmd`**'ye çift tıkla ve UAC'ye "Evet" de.
-- **Servisi tamamen kaldır:** Panelde **Kaldır**, veya yönetici komut isteminde: `sc stop GoodbyeDPI && sc delete GoodbyeDPI`.
+- **DNS'i eski haline al:** Panelde DoH anahtarını kapat (yedekten geri yükler) ya da `uninstall.cmd` sonunda "E" de.
+- **Servisi tamamen kaldır:** Panelde **Kaldır**, veya `uninstall.cmd`.
 
 ---
 
@@ -117,7 +170,10 @@ Bu araç bir **sansür aşma / ağ tanılama** aracıdır. Yalnızca **yasal iç
 
 ## 🙏 Teşekkür & Lisans
 
-- Asıl motor: **[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI)** — © ValdikSS, [WinDivert](https://github.com/basil00/Divert) tabanlı. GoodbyeDPI kendi lisansına (genellikle Apache 2.0 / ilgili lisanslar) tabidir; bu depo GoodbyeDPI'nin **kendisini içermez**, yalnızca panel arayüzünü sağlar.
+- Asıl motor: **[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI)** © ValdikSS — Apache License 2.0. Bu repo **değiştirilmemiş 0.2.3rc3** ikili dosyalarını içerir.
+- **[WinDivert](https://github.com/basil00/WinDivert)** © basil00 — LGPLv3 veya GPLv2 (seçime bağlı).
+- Sürüm, kaynak adresleri, lisans metinleri ve SHA-256 özetleri: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), [`licenses/`](licenses/).
+- Sağlayıcı önerileri: [GoodbyeDPI-Turkey](https://github.com/cagritaskn/GoodbyeDPI-Turkey) ve Technopat / Techolay kullanıcı bildirimleri.
 - Bu panel: MIT Lisansı ile sunulur (aşağıya bak).
 
 ---
@@ -127,89 +183,48 @@ Bu araç bir **sansür aşma / ağ tanılama** aracıdır. Yalnızca **yasal iç
 
 [Türkçe](#️-goodbyedpi-panel) | **English**
 
-A **dead-simple** Windows control panel for [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI). It installs GoodbyeDPI as a **Windows service** to bypass DPI (Deep Packet Inspection) and DNS-based blocking, and lets you manage everything from one window. Single file, no installation needed.
+A **dead-simple** Windows control panel for [GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI). It installs GoodbyeDPI as a **Windows service** to bypass DPI and DNS-based blocking and lets you manage it from one window. **GoodbyeDPI is bundled** (`bin\x86_64`, `bin\x86`); no separate download.
 
-> Clean, beginner-friendly UI — every setting explains what it does.
+> ⚠️ **Honest note:** no mode is guaranteed on every ISP or every line. ISPs change their DPI, and results differ even within one ISP. **"Auto-Find"** tries the modes on *your* line and installs the one that works.
 
-### ⚡ One-Click Setup (Easiest Way)
+### ⚡ One-Click Setup
 
-> **Never downloaded GoodbyeDPI? No problem — everything is handled automatically.**
-
-1. [**⬇️ Download this repo**](../../archive/refs/heads/main.zip) (or click green **Code** → **Download ZIP** at the top)
-2. Extract the ZIP to a folder
-3. Double-click **`setup.cmd`** → click **"Yes"** on UAC
-4. **Done!** GoodbyeDPI is automatically downloaded, installed as a service, and started.
-
-> **Alternative:** Double-click `Start-Panel.cmd` → panel opens → click **"Download & Install"** button. Same thing, with a GUI.
+1. [**⬇️ Download this repo**](../../archive/refs/heads/main.zip) and extract it.
+2. Double-click **`setup.cmd`** → **"Yes"** on UAC.
+3. Pick your ISP (1-7; 7 or wait if unsure).
+4. Done: service installed, DoH enabled, panel opens. If Discord won't open, click **Auto-Find & Apply**.
 
 ### ✨ Features
 
-- ⬇️ **Auto-download** — If GoodbyeDPI is missing, downloads and installs it from GitHub with one click. No separate download needed.
-- 🟢 **Service management** — One-click Install / Uninstall / Start / Stop / Restart. Installs with auto-start (runs silently on every boot, no CMD window).
-- 🎚️ **Explained mode picker** — `-1`…`-9` and `--set-ttl`, each with a plain-language description. ⭐ A ready preset recommended for Turkey.
-- 🪄 **Auto-find best mode** — Type a site that won't open; the panel tries each mode and auto-applies the one that works.
-- 🔒 **Encrypted DNS (DoH)** — Toggle DNS-over-HTTPS with one switch (bypasses DNS-based blocking).
-- 🧪 **Site access test** — Enter an address and see whether DNS and the HTTPS connection work.
-- 🌍 **Bilingual** — Turkish / English (one-button toggle).
+- 📦 **GoodbyeDPI included** — the official 0.2.3rc3 release, unmodified, in `bin\`; the right binary for 64/32-bit Windows is picked. If `bin\` is missing, the same release is downloaded and SHA-256 verified.
+- 🏷️ **Per-ISP suggestions** (Türk Telekom, TurkNet, Superonline, Vodafone, Kablonet, Millenicom) with sources — community knowledge, may change.
+- 🪄 **Auto-find** — stops at the first mode where Windows DNS, the Discord API, gateway, CDN and **updater (updates.discord.com)**, your site and general internet all work.
+- 🔒 **Reversible DoH** — Windows DNS-over-HTTPS (Google + Cloudflare, IPv4 + IPv6); old DNS settings are backed up and restored when you switch it off.
+- 🎯 **Blacklist mode** — bypass only for listed domains (all Discord domains included), `--allow-no-sni` for split post-quantum ClientHellos ([upstream #330](https://github.com/ValdikSS/GoodbyeDPI/issues/330)).
+- Options: `-q` (block QUIC), GoodbyeDPI DNS redirection (`77.88.8.8:1253`, upstream example) for Windows without built-in DoH.
 
-### 📦 Installation (Detailed)
+### 🩺 Discord stuck on "Checking for updates"
 
-**Option A: Automatic (recommended)**
+The desktop app uses **Windows DNS** (not the browser's Secure DNS), and Discord names are DNS-blocked in Turkey. Steps: apply this version (`setup.cmd` or **Apply Selected Mode**) → **Enable DoH** (Windows 10: tick *GoodbyeDPI DNS redirection* instead) → pick your ISP → **Auto-Find** → fully quit Discord from the tray icon and reopen it. If Auto-Find shows `DNS:✖`, the problem is DNS, not the mode. Still failing: try *Block QUIC*, disable VPN/WARP, check antivirus. On some lines GoodbyeDPI is simply not enough.
 
-Double-click `setup.cmd` — it downloads GoodbyeDPI, installs the service, and opens the panel. Nothing else needed.
+On the author's test line, plain DNS queries for blocked names (8.8.8.8, 9.9.9.9 and Yandex `77.88.8.8:1253`) got no answer while DoH worked, so DoH is the primary path.
 
-**Option B: Manual**
+### Updating an old install
 
-1. Download the [latest GoodbyeDPI release](https://github.com/ValdikSS/GoodbyeDPI/releases) and extract it (must contain `goodbyedpi.exe`).
-2. Copy the files from this repo into the **same folder as `goodbyedpi.exe`**.
-3. Double-click **`Start-Panel.cmd`** → click **"Yes"** on the UAC prompt.
+Copy the new files over the old folder (e.g. `C:\Program Files\GoodbyeDPI`) and click **Apply Selected Mode** (or run `setup.cmd`): the service is rewritten to `bin\x86_64\goodbyedpi.exe <mode> --blacklist "...\blacklist.txt" --allow-no-sni`.
 
-> The panel must run elevated (to change service and DNS settings), so it asks for UAC once at startup.
+- **ARM64 Windows is not supported** (WinDivert has no ARM64 driver).
 
-### 🚀 Quick Start
+### 🙏 Credits & License
 
-1. Open the panel.
-2. **Enable DoH** (for DNS blocking).
-3. With ⭐ **`-5 --set-ttl 3`** selected, click **Install**.
-4. If a site still won't open → use **Auto-Find & Apply** to detect the right mode for it.
-
-### 🎚️ What do the modes do?
-
-Modes set the bypass **technique**. Different sites are blocked differently, so there's no single right mode — if a site won't open, change the mode.
-
-| Mode | Description |
-|------|-------------|
-| ⭐ `-5 --set-ttl 3` | **Recommended.** Bypasses both RST-injecting and silent-drop DPI at once. If it fails, try `--set-ttl 4`. |
-| `-1` | Lightest and fastest. Enough for simple blocks. |
-| `-2` | Light, different fragment size. |
-| `-4` | Simplest/passive mode. |
-| `-5` | Medium-strong. Good start for modern DPI. |
-| `-6` | Variant of `-5` (wrong-seq). |
-| `-9` | Most aggressive/combined. For hard cases; may slow some sites. |
-
-**`--set-ttl N`:** Sends a fake low-TTL packet to confuse DPI; helps defeat the "silent drop" technique. If it doesn't work, switch between `3` ↔ `4`.
-
-### 🧠 What does this mean?
-
-- **DPI (Deep Packet Inspection):** Your ISP inspects traffic to detect and block which site you visit. GoodbyeDPI fragments/alters packets to confuse it.
-- **SNI blocking:** During an HTTPS handshake the target name (e.g. `example.com`) is sent in clear text; DPI sees it and resets (RST) or silently drops the connection. GoodbyeDPI hides it.
-- **DNS blocking:** Resolving a name to its IP is sabotaged. **DoH (DNS-over-HTTPS)** encrypts queries to bypass it.
-
-### 🩺 Troubleshooting
-
-- **Site still won't open:** Enable **DoH** first, then run **Auto-Find**. Restart your browser.
-- **Browser uses its own DNS:** Disable `Settings → Privacy → Secure DNS` in Chrome/Edge (system DoH already handles it).
-- **Panel won't open:** Double-click **`Start-Panel.cmd`** (not the `.hta`) and accept UAC.
-- **Fully remove the service:** Click **Uninstall** in the panel, or in an admin prompt: `sc stop GoodbyeDPI && sc delete GoodbyeDPI`.
+- **[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI)** © ValdikSS — Apache-2.0; bundled unmodified (0.2.3rc3).
+- **[WinDivert](https://github.com/basil00/WinDivert)** © basil00 — LGPLv3 or GPLv2.
+- Versions, source URLs, licence texts, SHA-256: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), [`licenses/`](licenses/).
+- This panel: MIT License (below).
 
 ### ⚠️ Disclaimer
 
 This is a **censorship-circumvention / network-diagnostic** tool. Use it only for **personal access to legal content** and educational purposes. Complying with your country's laws is your responsibility. The author assumes no liability.
-
-### 🙏 Credits & License
-
-- Core engine: **[GoodbyeDPI](https://github.com/ValdikSS/GoodbyeDPI)** © ValdikSS, built on [WinDivert](https://github.com/basil00/Divert). GoodbyeDPI is under its own license; this repo does **not** bundle GoodbyeDPI itself, only the panel UI.
-- This panel: MIT License (see below).
 
 ---
 
